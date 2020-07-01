@@ -6,8 +6,8 @@ Card = collections.namedtuple('Card',['set','rank','name'])
 class TarotDeck:
     minorArcanaSuites = 'Wands Pentacles Cups Swords'.split()
     
-    minorArcanaRanks = ['Ace'] + [str(n) for n in range(2,11)] \
-                        + ['Page', 'Knight', 'Queen', 'King']
+    minorArcanaRanks = ['Ace'] + [str(n) for n in range(2,11)
+                       ] + ['Page', 'Knight', 'Queen', 'King']
                                   
     majorArcana =   (('0', 'The Fool'),  
                     ('I', 'The Magician'), 
@@ -33,11 +33,11 @@ class TarotDeck:
                     ('XXI', 'The World'))
 
     def __init__(self):
-        self._cards = [Card('Trumps', rank, name) \
-                       for (rank, name) in self.majorArcana] \
-                    + [Card('Minor', rank, name) \
-                       for name in self.minorArcanaSuites \
-                       for rank in self.minorArcanaRanks]
+        self._cards = [Card('Trumps', rank, name) 
+                        for (rank, name) in self.majorArcana
+                      ] + [Card('Minor', rank, name)
+                        for name in self.minorArcanaSuites
+                        for rank in self.minorArcanaRanks]
 
     def __len__(self):
         return len(self._cards)
