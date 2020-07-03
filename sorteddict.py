@@ -15,5 +15,5 @@ print("Dict comprehension sorted by value:\n", moo)
 moo2 = { x:y for x,y in sorted(bar, key=lambda c : c[1].lower()) }
 print("Dict comprehension sorted by value (case insensitive):\n", moo2)
 
-
-
+moo3 = { x:y for x,y in sorted(bar, key=lambda c : c[1]) if y.islower()}
+print("Dict comprehension sorted by value, filtering for lowercase:\n", moo3)
