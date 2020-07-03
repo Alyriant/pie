@@ -5,6 +5,7 @@ print("Initial tuple:\n", foo)
 bar = [ (y.lower(), x ) for x,y in foo ]
 print("Transformed:\n", bar)
 
+# Dict construction order preserved in Python 3.7+
 baz = { x:y for x,y in sorted(bar) }
 print("Dict comprehension sorted by key:\n", baz)
 
