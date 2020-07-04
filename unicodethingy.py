@@ -1,5 +1,5 @@
 # Find the most common words in the names of the unicode characters,
-# and also print out every character that has the word 'L' in the name
+# and also print out every character that has the word 'ARROW' in the name
 
 import unicodedata
 import collections 
