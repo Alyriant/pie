@@ -14,10 +14,10 @@ for name in named:
 
 print(counter.most_common(150))
 
-arrows = { chr(i) + ' (' + str(i) + ') ' + unicodedata.name(chr(i),'')
+arrows = ['{0} 0x{1:4X} {2}'.format(chr(i), i, unicodedata.name(chr(i),''))
     for i in range(0xFFFF)
-    if unicodedata.name(chr(i),'').split().__contains__('ARROW') }
+    if unicodedata.name(chr(i),'').split().__contains__('ARROW') ]
               
-for arrow in sorted(arrows):
+for arrow in arrows:
     print(arrow)
     
