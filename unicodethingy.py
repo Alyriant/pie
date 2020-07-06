@@ -4,10 +4,10 @@
 import unicodedata
 import collections
 
-unirange = 0x10FFFF
+UNIRANGE = 0x10FFFF
 
 named = { unicodedata.name(chr(i))
-          for i in range(unirange)
+          for i in range(UNIRANGE)
           if unicodedata.name(chr(i),'') }
 
 counter = collections.Counter()
@@ -17,7 +17,7 @@ for name in named:
 print(counter.most_common(150))
 
 arrows = ['{0} U+{1:X} {2}'.format(chr(i), i, unicodedata.name(chr(i),''))
-    for i in range(unirange)
+    for i in range(UNIRANGE)
     if unicodedata.name(chr(i),'').split().__contains__('ARROW') ]
               
 for arrow in arrows:
