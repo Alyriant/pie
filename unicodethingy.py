@@ -1,11 +1,13 @@
 # Find the most common words in the names of the unicode characters,
-# and also print out every character that has the word 'L' in the name
+# and also print out every character that has the word 'ARROW' in the name
 
 import unicodedata
-import collections 
+import collections
+
+unirange = 0x10FFFF
 
 named = { unicodedata.name(chr(i))
-          for i in range(0xFFFF)
+          for i in range(unirange)
           if unicodedata.name(chr(i),'') }
 
 counter = collections.Counter()
@@ -14,10 +16,10 @@ for name in named:
 
 print(counter.most_common(150))
 
-Ls = { chr(i) + ' (' + str(i) + ') ' + unicodedata.name(chr(i),'')
-        for i in range(0xFFFF)
-        if unicodedata.name(chr(i),'').split().__contains__('L') }
+arrows = ['{0} U+{1:X} {2}'.format(chr(i), i, unicodedata.name(chr(i),''))
+    for i in range(unirange)
+    if unicodedata.name(chr(i),'').split().__contains__('ARROW') ]
               
-for l in sorted(Ls):
-    print(l)
+for arrow in arrows:
+    print(arrow)
     
