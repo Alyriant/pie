@@ -13,7 +13,7 @@ NUM_STATS = len(STAT_NAMES)
 
 WEIGHTING = {
     "sum": sum,
-    "RMS": lambda scores : trunc(sqrt(reduce((lambda a,b : a + b*b),scores)/len(scores)))
+    "RMS": lambda scores : trunc(sqrt(reduce((lambda a,b : a + b*b),scores,0)/len(scores)))
 }
 NUM_WEIGHTS = len(WEIGHTING)
 
