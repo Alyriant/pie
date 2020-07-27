@@ -1,3 +1,5 @@
+import queue
+
 class Edge:
     def __init__(self, v1, v2, weight=None):
         self.v1 = v1
@@ -32,6 +34,11 @@ class Graph:
         for edge in edges:
             self.addEdge(edge)
             
+    def addEdgesFromLists(self, edges):
+        for e in edges:
+            weight = e[2] if self.weighted else None
+            self.addEdge(Edge(e[0], e[1], weight))
+            
     def findTopologicalOrdering(self):
         indegree = {}
         for vert in self.adjacency_map.keys():
@@ -57,12 +64,58 @@ class Graph:
         else:
             return order
     
+    def breadthFirstTraversal(self, start):
+        """Find the paths and distances of other nodes from the start node.
+        Ignores path weights."""
+        num = len(self.adjacency_map)
+        KNOWN = False
+        DIST = 1
+        PATH = 2
+        info = { v : list([False, -1, list()]) for v in self.adjacency_map.keys() }
+        cur = info[start]
+        cur[KNOWN] = True
+        cur[DIST] = 0
+        cur[PATH].append(start)
+        
+        q = queue.SimpleQueue()
+        q.put(start)
+        while not q.empty():
+            cur = q.get()
+            cur_info = info[cur]
+            neighbors = self.adjacency_map[cur]
+            for edge in neighbors:
+                vert = edge.v2
+                print(vert, info)
+                i = info[vert]
+                if not i[KNOWN]:
+                    i[KNOWN] = True
+                    i[DIST] = cur_info[DIST] + 1
+                    i[PATH].extend(cur_info[PATH])
+                    i[PATH].append(vert)
+                    q.put(vert)
+        
+        for vert, val in info.items():
+            print(f"To {vert} - path length: {val[DIST]}. Path: {val[PATH]}.")
+        
+        
     
 if __name__ ==  "__main__":
     g = Graph()
-    g.addEdges([Edge(2,3), Edge(3,4), Edge(1,0), Edge(1,2), Edge(1,3)])
+    call = "g.addEdgesFromLists([[2,3], [3,4], [1,0], [1,2], [1,3]])"
+    print(call)
+    exec(call)
     print(g.findTopologicalOrdering())
     
-    g.addEdges([Edge(2,1)])
+    call = "g.addEdgesFromLists([[2,1]])"
+    print(call)
+    exec(call)
     print(g.findTopologicalOrdering())
+    
+    g = Graph()
+    call = "g.addEdgesFromLists([[2,3], [3,4], [1,0], [1,2], [1,3]])"
+    print(call)
+    exec(call)
+    call = 'g.breadthFirstTraversal(2)'
+    print(call)
+    exec(call)
     
