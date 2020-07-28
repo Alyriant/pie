@@ -85,7 +85,6 @@ class Graph:
             neighbors = self.adjacency_map[cur]
             for edge in neighbors:
                 vert = edge.v2
-                print(vert, info)
                 i = info[vert]
                 if not i[KNOWN]:
                     i[KNOWN] = True
@@ -97,25 +96,19 @@ class Graph:
         for vert, val in info.items():
             print(f"To {vert} - path length: {val[DIST]}. Path: {val[PATH]}.")
         
-        
-    
+def printAndExec(call):
+    print(call)
+    exec(call)
+
 if __name__ ==  "__main__":
     g = Graph()
-    call = "g.addEdgesFromLists([[2,3], [3,4], [1,0], [1,2], [1,3]])"
-    print(call)
-    exec(call)
+    printAndExec("g.addEdgesFromLists([[2,3], [3,4], [1,0], [1,2], [1,3]])")
     print(g.findTopologicalOrdering())
     
-    call = "g.addEdgesFromLists([[2,1]])"
-    print(call)
-    exec(call)
+    printAndExec("g.addEdgesFromLists([[2,1]])")
     print(g.findTopologicalOrdering())
     
     g = Graph()
-    call = "g.addEdgesFromLists([[2,3], [3,4], [1,0], [1,2], [1,3]])"
-    print(call)
-    exec(call)
-    call = 'g.breadthFirstTraversal(2)'
-    print(call)
-    exec(call)
+    printAndExec("g.addEdgesFromLists([[2,3], [3,4], [1,0], [1,2], [1,3]])")
+    printAndExec('g.breadthFirstTraversal(2)')
     
