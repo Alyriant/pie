@@ -34,7 +34,7 @@ class CombinationIterator:
 # param_2 = obj.hasNext()
 
 if __name__ == "__main__":
-    c = CombinationIterator("abc", 2)
+    c = CombinationIterator("abcdefg", 3)
     while c.hasNext():
         print(c.next())
         
