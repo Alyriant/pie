@@ -1,9 +1,9 @@
 class Graph:
     """ Graph based on Sedgewick, 17.1 """
 
-    def __init__(self, num_verts, is_directed):
+    def __init__(self, num_verts, directed):
         self.num_verts = num_verts
-        self.is_directed = is_directed
+        self.directed = directed
         self.num_edges = 0
         self.verts = [list() for _ in range(num_verts)]
     
@@ -23,6 +23,9 @@ class Graph:
         
     def get_adj_iter(self, v):
         return self.verts[v]
+        
+    def is_directed(self):
+        return self.directed
         
 #class AdjacencyIterator:
 #
@@ -71,6 +74,8 @@ class GraphIO:
             v = int(v)
             w = int(w)
             graph.insert_edge(Edge(v, w))
+            if not graph.is_directed():
+                graph.insert_edge(Edge(w, v))
     
     def scan_symbols(self):
         pass
@@ -95,7 +100,7 @@ class DriverExample:
             lines = f.readlines()
             num_verts = int(lines[0])
             print(num_verts, "vertices")
-            graph = Graph(num_verts, is_directed=False)
+            graph = Graph(num_verts, directed=False)
             io = GraphIO()
             io.scan_verts(graph, lines[1:])
             if num_verts < 20:
