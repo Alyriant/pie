@@ -46,7 +46,7 @@ class Edge:
 
 class GraphUtilities:    
 
-    def get_edges(graph):
+    def get_edges(self, graph):
         """ Sedgewick 17.2 """
 
         edges = []
@@ -81,16 +81,40 @@ class GraphIO:
         pass
         
 class GraphConnectedComponents:
-    """ Sedgewick 17.5 """
-
+    """ Sedgewick 17.5, 1.3, 1.4 """
+    
     def __init__(self, graph):
-        pass
-    
+        id = list(range(graph.num_verts))
+        edges = GraphUtilities().get_edges(graph)
+        for edge in edges:
+            i = edge.v
+            j = edge.w
+            while i != id[i]:
+                id[i] = id[id[i]]
+                i = id[i]
+            while j != id[j]:
+                id[j] = id[id[j]]
+                j = id[j]
+            if i != j:
+                id[i] = j
+        self.count = 0
+        for i in range(graph.num_verts):
+            if i == id[i]:
+                self.count += 1
+        self.id = id
+        
     def component_count(self):
-        pass
-    
-    def are_connected(self, v, w):
-        pass
+        return self.count
+        
+    def are_connected(self, i, j):
+        id = self.id
+        while i != id[i]:
+            id[i] = id[id[i]]
+            i = id[i]
+        while j != id[j]:
+            id[j] = id[id[j]]
+            j = id[j]
+        return i == j
         
 class DriverExample:
     """ Sedgewick 17.6 """
