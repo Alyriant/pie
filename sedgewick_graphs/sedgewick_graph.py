@@ -132,6 +132,8 @@ class DriverExample:
             print(graph.num_edges, "edges")
             cc = GraphConnectedComponents(graph)
             print(cc.component_count(), "components")
+            print("0 connected to 1:", cc.are_connected(0, 1))
+            print("1 connected to 2:", cc.are_connected(1, 2))
     
 if __name__ == "__main__":
     DriverExample().main()
