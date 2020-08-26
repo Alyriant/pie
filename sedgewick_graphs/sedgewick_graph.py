@@ -18,7 +18,7 @@ class Graph:
         self.num_edges += 1
     
     def remove_edge(self, edge):
-        self.verts[v].remove(w)
+        self.verts[edge.v].remove(edge.w)
         self.num_edges -= 1
         
     def get_adj_iter(self, v):
@@ -26,8 +26,9 @@ class Graph:
         
     def is_directed(self):
         return self.directed
-        
-#class AdjacencyIterator:
+
+
+# class AdjacencyIterator:
 #
 #    def __init__(self):
 #        pass
@@ -37,16 +38,19 @@ class Graph:
 #    
 #    def __next__(self):
 #        pass
-        
+
+
 class Edge:
 
     def __init__(self, v, w):
         self.v = v
         self.w = w
 
+
 class GraphUtilities:    
 
-    def get_edges(self, graph):
+    @staticmethod
+    def get_edges(graph):
         """ Sedgewick 17.2 """
 
         edges = []
@@ -56,10 +60,12 @@ class GraphUtilities:
                     edges.append(Edge(v, w))
         return edges
 
+
 class GraphIO:
     """ Sedgewick 17.4 """
 
-    def print_graph(self, graph):
+    @staticmethod
+    def print_graph(graph):
         """ Sedgewick 17.3 """
 
         for v in range(graph.num_verts):
@@ -67,7 +73,8 @@ class GraphIO:
             w = list(graph.get_adj_iter(v))
             print(w)
 
-    def scan_verts(self, graph, lines):
+    @staticmethod
+    def scan_verts(graph, lines):
         """ read lines of vert number pairs representing edges and add to the graph """
         for line in lines:
             v, w = line.split()
@@ -79,7 +86,8 @@ class GraphIO:
     
     def scan_symbols(self):
         pass
-        
+
+
 class GraphConnectedComponents:
     """ Sedgewick 17.5, 1.3, 1.4 """
     
@@ -115,7 +123,8 @@ class GraphConnectedComponents:
             id[j] = id[id[j]]
             j = id[j]
         return i == j
-        
+
+
 class DriverExample:
     """ Sedgewick 17.6 """
 
@@ -134,6 +143,7 @@ class DriverExample:
             print(cc.component_count(), "components")
             print("0 connected to 1:", cc.are_connected(0, 1))
             print("1 connected to 2:", cc.are_connected(1, 2))
-    
+
+
 if __name__ == "__main__":
     DriverExample().main()
