@@ -3,80 +3,6 @@ import math
 import random
 
 
-class Multigraph:
-    """ Adjacency-list multigraph based on Sedgewick, 17.1 """
-
-    def __init__(self, num_verts, directed):
-        self.num_verts = num_verts
-        self.directed = directed
-        self.num_edges = 0
-        self.verts = [list() for _ in range(num_verts)]
-
-    def num_verts(self):
-        return self.num_verts
-
-    def num_edges(self):
-        return self.num_edges
-
-    def insert_edge(self, edge):
-        self.verts[edge.v].append(edge.w)
-        self.num_edges += 1
-
-    def remove_edge(self, edge):
-        self.verts[edge.v].remove(edge.w)
-        self.num_edges -= 1
-
-    def get_adj_iter(self, v):
-        return self.verts[v]
-
-    def is_directed(self):
-        return self.directed
-
-
-class Graph:
-    """ Adjacency-set graph based on Sedgewick, 17.1 """
-
-    def __init__(self, num_verts, directed):
-        self.num_verts = num_verts
-        self.directed = directed
-        self.num_edges = 0
-        self.verts = [set() for _ in range(num_verts)]
-
-    def num_verts(self):
-        return self.num_verts
-
-    def num_edges(self):
-        return self.num_edges
-
-    def insert_edge(self, edge):
-        if edge.w not in self.verts[edge.v]:
-            self.verts[edge.v].add(edge.w)
-            self.num_edges += 1
-
-    def remove_edge(self, edge):
-        if edge.w in self.verts[edge.v]:
-            self.verts[edge.v].remove(edge.w)
-            self.num_edges -= 1
-
-    def get_adj_iter(self, v):
-        return list(self.verts[v])
-
-    def is_directed(self):
-        return self.directed
-
-
-# class AdjacencyIterator:
-#
-#    def __init__(self):
-#        pass
-#    
-#    def __iter__(self):
-#        return self
-#    
-#    def __next__(self):
-#        pass
-
-
 class Edge:
 
     def __init__(self, v, w):
@@ -84,18 +10,75 @@ class Edge:
         self.w = w
 
 
-class GraphUtilities:    
+class Graph:
 
-    @staticmethod
-    def get_edges(graph):
+    def __init__(self, num_verts, directed):
+        self._num_verts = num_verts
+        self._directed = directed
+        self._num_edges = 0
+
+    def num_verts(self):
+        return self._num_verts
+
+    def num_edges(self):
+        return self._num_edges
+
+    def is_directed(self):
+        return self._directed
+
+    def get_edges(self):
         """ Sedgewick 17.2 """
 
         edges = []
-        for v in range(graph.num_verts):
-            for w in graph.get_adj_iter(v):
-                if graph.is_directed() or v < w:
+        for v in range(self.num_verts()):
+            for w in self.get_adj_iter(v):
+                if self.is_directed() or v < w:
                     edges.append(Edge(v, w))
         return edges
+
+
+class AdjListGraph(Graph):
+    """ Adjacency-list multigraph based on Sedgewick, 17.1 """
+
+    def __init__(self, num_verts, directed):
+        super().__init__(num_verts, directed)
+        self._verts = [list() for _ in range(num_verts)]
+
+    def insert_edge(self, edge):
+        self._verts[edge.v].append(edge.w)
+        self._num_edges += 1
+
+    def remove_edge(self, edge):
+        self._verts[edge.v].remove(edge.w)
+        self._num_edges -= 1
+
+    def get_adj_iter(self, v):
+        return self._verts[v]
+
+
+class AdjSetGraph(Graph):
+    """ Adjacency-set graph based on Sedgewick, 17.1 """
+
+    def __init__(self, num_verts, directed):
+        super().__init__(num_verts, directed)
+        self._verts = [set() for _ in range(num_verts)]
+
+    def insert_edge(self, edge):
+        if edge.w not in self._verts[edge.v]:
+            self._verts[edge.v].add(edge.w)
+            self._num_edges += 1
+            if not self._directed:
+                self._verts[edge.w].add(edge.v)
+
+    def remove_edge(self, edge):
+        if edge.w in self._verts[edge.v]:
+            self._verts[edge.v].remove(edge.w)
+            self._num_edges -= 1
+            if not self._directed:
+                self._verts[edge.w].remove(edge.v)
+
+    def get_adj_iter(self, v):
+        return list(self._verts[v])
 
 
 class GraphIO:
@@ -105,9 +88,12 @@ class GraphIO:
     def print_graph(graph):
         """ Sedgewick 17.3 """
 
-        for v in range(graph.num_verts):
+        print(f"directed: {graph.is_directed()}")
+        print(f"num verts: {graph.num_verts()}")
+        print(f"num edges: {graph.num_edges()}")
+        for v in range(graph.num_verts()):
             print(v, ":", end=" ")
-            w = list(graph.get_adj_iter(v))
+            w = sorted(list(graph.get_adj_iter(v)))
             print(w)
 
     @staticmethod
@@ -129,14 +115,14 @@ class GraphIO:
         win = GraphWin("My Circle", 1024, 1024)
         win.setCoords(-1.1, -1.1, 1.1, 1.1)
 
-        angle = 2 * math.pi / graph.num_verts
-        id = list(range(graph.num_verts))
+        angle = 2 * math.pi / graph.num_verts()
+        id = list(range(graph.num_verts()))
         for vert in id:
             a = angle * vert
             c = Circle(Point(math.cos(a), math.sin(a)), 0.01)
             c.draw(win)
 
-        edges = GraphUtilities().get_edges(graph)
+        edges = graph.get_edges()
         for edge in edges:
             a1 = angle * edge.v
             a2 = angle * edge.w
@@ -151,21 +137,43 @@ class GraphIO:
         win.close()  # Close window when done
 
     @staticmethod
-    def create_random_graph(num_verts, num_edges, directed):
-        graph = Graph(num_verts, directed)
-        while graph.num_edges < num_edges:
+    def create_random_sparse_graph(num_verts, num_edges, directed):
+        """ Sedgewick 17.12 """
+        graph = AdjSetGraph(num_verts, directed)
+        while graph.num_edges() < num_edges:
             v = random.randint(0, num_verts-1)
             w = random.randint(0, num_verts-1)
             if v != w:
                 graph.insert_edge(Edge(v, w))
         return graph
 
+    @staticmethod
+    def create_random_dense_graph(num_verts, approx_num_edges, directed):
+        """ Sedgewick 17.13 """
+        graph = AdjSetGraph(num_verts, directed)
+        probability = approx_num_edges/(num_verts*(num_verts-1))
+        if not directed:
+            probability *= 2
+        for v in range(num_verts):
+            if directed:
+                next_range = num_verts
+            else:
+                next_range = v
+            for w in range(next_range):
+                if random.random() < probability and w != v:
+                    if directed and random.randint(0, 1) == 1:
+                        graph.insert_edge(Edge(v, w))
+                    else:
+                        graph.insert_edge(Edge(w, v))
+        return graph
+
+
 class GraphConnectedComponents:
     """ Sedgewick 17.5, 1.3, 1.4 """
     
     def __init__(self, graph):
-        id = list(range(graph.num_verts))
-        edges = GraphUtilities().get_edges(graph)
+        id = list(range(graph.num_verts()))
+        edges = graph.get_edges()
         for edge in edges:
             i = edge.v
             j = edge.w
@@ -178,7 +186,7 @@ class GraphConnectedComponents:
             if i != j:
                 id[i] = j
         self.count = 0
-        for i in range(graph.num_verts):
+        for i in range(graph.num_verts()):
             if i == id[i]:
                 self.count += 1
         self.id = id
@@ -206,12 +214,12 @@ class DriverExample:
             lines = f.readlines()
             num_verts = int(lines[0])
             print(num_verts, "vertices")
-            graph = Graph(num_verts, directed=False)
+            graph = AdjListGraph(num_verts, directed=False)
             io = GraphIO()
             io.scan_verts(graph, lines[1:])
             if num_verts < 20:
                 io.print_graph(graph)
-            print(graph.num_edges, "edges")
+            print(graph.num_edges(), "edges")
             cc = GraphConnectedComponents(graph)
             print(cc.component_count(), "components")
             print("0 connected to 1:", cc.are_connected(0, 1))
@@ -220,14 +228,21 @@ class DriverExample:
             io.draw_graph(graph)
 
     @staticmethod
-    def random_graph():
+    def random_sparse_graph():
         io = GraphIO()
-        graph = io.create_random_graph(30,40, True)
+        graph = io.create_random_sparse_graph(num_verts=30, num_edges=40, directed=True)
         io.draw_graph(graph)
+
+    @staticmethod
+    def random_dense_graph():
+        io = GraphIO()
+        graph = io.create_random_dense_graph(num_verts=10, approx_num_edges=40, directed=True)
+        io.draw_graph(graph)
+        io.print_graph(graph)
 
 
 if __name__ == "__main__":
     ex = DriverExample()
-    # ex.main()
-    ex.random_graph()
-    
+    ex.main()
+    ex.random_sparse_graph()
+    ex.random_dense_graph()
