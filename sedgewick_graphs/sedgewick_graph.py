@@ -128,7 +128,8 @@ class GraphConnectedComponents:
 class DriverExample:
     """ Sedgewick 17.6 """
 
-    def main(self):
+    @staticmethod
+    def main():
         with open('DriverExample.txt') as f: 
             lines = f.readlines()
             num_verts = int(lines[0])
@@ -142,7 +143,7 @@ class DriverExample:
             cc = GraphConnectedComponents(graph)
             print(cc.component_count(), "components")
             print("0 connected to 1:", cc.are_connected(0, 1))
-            print("1 connected to 2:", cc.are_connected(1, 2))
+            print("1 connected to 5:", cc.are_connected(1, 5))
 
 
 if __name__ == "__main__":
