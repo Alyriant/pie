@@ -36,6 +36,27 @@ class Graph:
                     edges.append(Edge(v, w))
         return edges
 
+    def depth_first_search_path(self, v, w):
+        """ Sedgewick 17.16 """
+        visited = [False] * self.num_verts()
+        path = []
+
+        def search(u):
+            path.append(u)
+            if u == w:
+                return True
+            visited[u] = True
+            neighbors = self.get_adj_iter(u)
+            for vert in neighbors:
+                if not visited[vert]:
+                    if search(vert):
+                        return True
+            path.pop()
+            return False
+
+        search(v)
+        return path
+
 
 class AdjListGraph(Graph):
     """ Adjacency-list multigraph based on Sedgewick, 17.1 """
@@ -167,41 +188,65 @@ class GraphIO:
                         graph.insert_edge(Edge(w, v))
         return graph
 
+    @staticmethod
+    def create_random_k_neighbor_graph(num_verts, approx_num_edges, directed, k):
+        """  """
+        graph = AdjSetGraph(num_verts, directed)
+        probability = approx_num_edges/(num_verts*(2*k))
+        if not directed:
+            probability *= 2
+        for v in range(num_verts):
+            if directed:
+                next_range = num_verts
+            else:
+                next_range = v
+            for x in range(v-k, v+k):
+                w = (x+num_verts) % num_verts
+                p = random.random()
+                if p < probability and w != v:
+                    if directed and random.randint(0, 1) == 1:
+                        graph.insert_edge(Edge(v, w))
+                    else:
+                        graph.insert_edge(Edge(w, v))
+        return graph
+
 
 class GraphConnectedComponents:
-    """ Sedgewick 17.5, 1.3, 1.4 """
+    """ Creates trees for each connected component, which are
+    gradually made more shallow to give quicker answers the
+    more they are queriedSedgewick 17.5, 1.3, 1.4 """
     
     def __init__(self, graph):
-        id = list(range(graph.num_verts()))
+        _id = list(range(graph.num_verts()))
         edges = graph.get_edges()
         for edge in edges:
             i = edge.v
             j = edge.w
-            while i != id[i]:
-                id[i] = id[id[i]]
-                i = id[i]
-            while j != id[j]:
-                id[j] = id[id[j]]
-                j = id[j]
+            while i != _id[i]:
+                _id[i] = _id[_id[i]]
+                i = _id[i]
+            while j != _id[j]:
+                _id[j] = _id[_id[j]]
+                j = _id[j]
             if i != j:
-                id[i] = j
+                _id[i] = j
         self.count = 0
         for i in range(graph.num_verts()):
-            if i == id[i]:
+            if i == _id[i]:
                 self.count += 1
-        self.id = id
+        self._id = _id
         
     def component_count(self):
         return self.count
         
     def are_connected(self, i, j):
-        id = self.id
-        while i != id[i]:
-            id[i] = id[id[i]]
-            i = id[i]
-        while j != id[j]:
-            id[j] = id[id[j]]
-            j = id[j]
+        _id = self._id
+        while i != _id[i]:
+            _id[i] = _id[_id[i]]
+            i = _id[i]
+        while j != _id[j]:
+            _id[j] = _id[_id[j]]
+            j = _id[j]
         return i == j
 
 
@@ -224,7 +269,8 @@ class DriverExample:
             print(cc.component_count(), "components")
             print("0 connected to 1:", cc.are_connected(0, 1))
             print("1 connected to 5:", cc.are_connected(1, 5))
-
+            print("Path from 0 to 1:", graph.depth_first_search_path(0, 1))
+            print("Path from 1 to 5:", graph.depth_first_search_path(1, 5))
             io.draw_graph(graph)
 
     @staticmethod
@@ -240,9 +286,17 @@ class DriverExample:
         io.draw_graph(graph)
         io.print_graph(graph)
 
+    @staticmethod
+    def random_k_neighbor_graph():
+        io = GraphIO()
+        graph = io.create_random_k_neighbor_graph(num_verts=20, approx_num_edges=20, directed=False, k=3)
+        io.draw_graph(graph)
+        io.print_graph(graph)
+
 
 if __name__ == "__main__":
     ex = DriverExample()
     ex.main()
-    ex.random_sparse_graph()
-    ex.random_dense_graph()
+    #ex.random_sparse_graph()
+    #ex.random_dense_graph()
+    #ex.random_k_neighbor_graph()
