@@ -211,10 +211,10 @@ class GraphIO:
         return graph
 
 
-class GraphConnectedComponents:
+class GraphConnectedComponentsFromEdges:
     """ Creates trees for each connected component, which are
     gradually made more shallow to give quicker answers the
-    more they are queriedSedgewick 17.5, 1.3, 1.4 """
+    more they are queried. Sedgewick 17.5, 1.3, 1.4 """
     
     def __init__(self, graph):
         _id = list(range(graph.num_verts()))
@@ -230,14 +230,14 @@ class GraphConnectedComponents:
                 j = _id[j]
             if i != j:
                 _id[i] = j
-        self.count = 0
+        self._component_count = 0
         for i in range(graph.num_verts()):
             if i == _id[i]:
-                self.count += 1
+                self._component_count += 1
         self._id = _id
         
     def component_count(self):
-        return self.count
+        return self._component_count
         
     def are_connected(self, i, j):
         _id = self._id
@@ -248,6 +248,35 @@ class GraphConnectedComponents:
             _id[j] = _id[_id[j]]
             j = _id[j]
         return i == j
+
+
+class GraphConnectedComponentsFromDFS:
+    """ Sedgewick 18.3 """
+    def __init__(self, graph):
+        self._graph = graph
+        self._component_count = 0
+        self._cc_id = [-1] * graph.num_verts()
+        self._spanning_tree_roots = []
+        self._examine_graph()
+
+    def component_count(self):
+        return self._component_count
+
+    def are_connected(self, v, w):
+        return self._cc_id[v] == self._cc_id[w]
+
+    def _examine_graph(self):
+        for v in range(self._graph.num_verts()):
+            if self._cc_id[v] == -1:
+                self._component_count += 1
+                self._spanning_tree_roots.append(v)
+                self._traverse_component(v)
+
+    def _traverse_component(self, v):
+        self._cc_id[v] = self._component_count
+        for w in self._graph.get_adj_iter(v):
+            if self._cc_id[w] == -1:
+                self._traverse_component(w)
 
 
 class DriverExample:
@@ -265,10 +294,16 @@ class DriverExample:
             if num_verts < 20:
                 io.print_graph(graph)
             print(graph.num_edges(), "edges")
-            cc = GraphConnectedComponents(graph)
-            print(cc.component_count(), "components")
-            print("0 connected to 1:", cc.are_connected(0, 1))
-            print("1 connected to 5:", cc.are_connected(1, 5))
+            
+            cc1 = GraphConnectedComponentsFromEdges(graph)
+            cc2 = GraphConnectedComponentsFromDFS(graph)
+            print(cc1.component_count(), "cc1 components")
+            print("cc1 0 connected to 1:", cc1.are_connected(0, 1))
+            print("cc1 1 connected to 5:", cc1.are_connected(1, 5))
+            print(cc2.component_count(), "cc2 components")
+            print("cc2 0 connected to 1:", cc2.are_connected(0, 1))
+            print("cc2 1 connected to 5:", cc2.are_connected(1, 5))
+
             print("Path from 0 to 1:", graph.depth_first_search_path(0, 1))
             print("Path from 1 to 5:", graph.depth_first_search_path(1, 5))
             io.draw_graph(graph)
