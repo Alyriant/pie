@@ -102,115 +102,144 @@ class AdjSetGraph(Graph):
         return list(self._verts[v])
 
 
-class GraphIO:
-    """ Sedgewick 17.4 """
+def print_title(title):
+    print()
+    print(title, '-' * 30)
 
-    @staticmethod
-    def print_graph(graph):
-        """ Sedgewick 17.3 """
 
-        print(f"directed: {graph.is_directed()}")
-        print(f"num verts: {graph.num_verts()}")
-        print(f"num edges: {graph.num_edges()}")
-        for v in range(graph.num_verts()):
-            print(v, ":", end=" ")
-            w = sorted(list(graph.get_adj_iter(v)))
-            print(w)
+def print_graph(graph):
+    """ Sedgewick 17.3 """
 
-    @staticmethod
-    def scan_verts(graph, lines):
-        """ read lines of vert number pairs representing edges and add to the graph """
-        for line in lines:
-            v, w = line.split()
-            v = int(v)
-            w = int(w)
+    print(f"directed: {graph.is_directed()}")
+    print(f"num verts: {graph.num_verts()}")
+    print(f"num edges: {graph.num_edges()}")
+    for v in range(graph.num_verts()):
+        print(v, ":", end=" ")
+        w = sorted(list(graph.get_adj_iter(v)))
+        print(w)
+
+
+def read_graph(filename, directed=False):
+    with open(filename) as f:
+        lines = f.readlines()
+        num_verts = int(lines[0])
+        graph = AdjListGraph(num_verts, directed)
+        scan_verts(graph, lines[1:])
+        print_graph(graph)
+        return graph
+
+
+def scan_verts(graph, lines):
+    """ read lines of vert number pairs representing edges and add to the graph """
+    for line in lines:
+        v, w = line.split()
+        v = int(v)
+        w = int(w)
+        graph.insert_edge(Edge(v, w))
+        if not graph.is_directed():
+            graph.insert_edge(Edge(w, v))
+
+
+def draw_graph(graph):
+    win = GraphWin("Graph", 1024, 1024)
+    win.setCoords(-1.1, -1.1, 1.1, 1.1)
+
+    angle = 2 * math.pi / graph.num_verts()
+    id = list(range(graph.num_verts()))
+    for vert in id:
+        a = angle * vert
+        c = Circle(Point(math.cos(a), math.sin(a)), 0.01)
+        c.draw(win)
+        c = Text(Point(1.05*math.cos(a), 1.05*math.sin(a)), str(vert))
+        c.draw(win)
+
+    edges = graph.get_edges()
+    for edge in edges:
+        a1 = angle * edge.v
+        a2 = angle * edge.w
+        p1 = Point(math.cos(a1), math.sin(a1))
+        p2 = Point(math.cos(a2), math.sin(a2))
+        line = Line(p1, p2)
+        if graph.is_directed():
+            line.setArrow("last")
+        line.draw(win)
+
+    win.getMouse()  # Pause to view result
+    win.close()  # Close window when done
+
+
+def create_random_sparse_graph(num_verts, num_edges, directed):
+    """ Sedgewick 17.12 """
+    graph = AdjSetGraph(num_verts, directed)
+    while graph.num_edges() < num_edges:
+        v = random.randint(0, num_verts-1)
+        w = random.randint(0, num_verts-1)
+        if v != w:
             graph.insert_edge(Edge(v, w))
-            if not graph.is_directed():
-                graph.insert_edge(Edge(w, v))
-    
-    def scan_symbols(self):
-        pass
+    return graph
 
-    @staticmethod
-    def draw_graph(graph):
-        win = GraphWin("Graph", 1024, 1024)
-        win.setCoords(-1.1, -1.1, 1.1, 1.1)
 
-        angle = 2 * math.pi / graph.num_verts()
-        id = list(range(graph.num_verts()))
-        for vert in id:
-            a = angle * vert
-            c = Circle(Point(math.cos(a), math.sin(a)), 0.01)
-            c.draw(win)
-            c = Text(Point(1.05*math.cos(a), 1.05*math.sin(a)), str(vert))
-            c.draw(win)
+def random_sparse_graph():
+    print_title("random_sparse_graph")
+    graph = create_random_sparse_graph(num_verts=30, num_edges=40, directed=True)
+    print_graph(graph)
+    draw_graph(graph)
 
-        edges = graph.get_edges()
-        for edge in edges:
-            a1 = angle * edge.v
-            a2 = angle * edge.w
-            p1 = Point(math.cos(a1), math.sin(a1))
-            p2 = Point(math.cos(a2), math.sin(a2))
-            line = Line(p1, p2)
-            if graph.is_directed():
-                line.setArrow("last")
-            line.draw(win)
 
-        win.getMouse()  # Pause to view result
-        win.close()  # Close window when done
+def create_random_dense_graph(num_verts, approx_num_edges, directed):
+    """ Sedgewick 17.13 """
+    graph = AdjSetGraph(num_verts, directed)
+    probability = approx_num_edges/(num_verts*(num_verts-1))
+    if not directed:
+        probability *= 2
+    for v in range(num_verts):
+        if directed:
+            next_range = num_verts
+        else:
+            next_range = v
+        for w in range(next_range):
+            if random.random() < probability and w != v:
+                if directed and random.randint(0, 1) == 1:
+                    graph.insert_edge(Edge(v, w))
+                else:
+                    graph.insert_edge(Edge(w, v))
+    return graph
 
-    @staticmethod
-    def create_random_sparse_graph(num_verts, num_edges, directed):
-        """ Sedgewick 17.12 """
-        graph = AdjSetGraph(num_verts, directed)
-        while graph.num_edges() < num_edges:
-            v = random.randint(0, num_verts-1)
-            w = random.randint(0, num_verts-1)
-            if v != w:
-                graph.insert_edge(Edge(v, w))
-        return graph
 
-    @staticmethod
-    def create_random_dense_graph(num_verts, approx_num_edges, directed):
-        """ Sedgewick 17.13 """
-        graph = AdjSetGraph(num_verts, directed)
-        probability = approx_num_edges/(num_verts*(num_verts-1))
-        if not directed:
-            probability *= 2
-        for v in range(num_verts):
-            if directed:
-                next_range = num_verts
-            else:
-                next_range = v
-            for w in range(next_range):
-                if random.random() < probability and w != v:
-                    if directed and random.randint(0, 1) == 1:
-                        graph.insert_edge(Edge(v, w))
-                    else:
-                        graph.insert_edge(Edge(w, v))
-        return graph
+def random_dense_graph():
+    print_title("random_dense_graph")
+    graph = create_random_dense_graph(num_verts=10, approx_num_edges=40, directed=True)
+    print_graph(graph)
+    draw_graph(graph)
 
-    @staticmethod
-    def create_random_k_neighbor_graph(num_verts, approx_num_edges, directed, k):
-        """  """
-        graph = AdjSetGraph(num_verts, directed)
-        probability = approx_num_edges/(num_verts*(2*k))
-        if not directed:
-            probability *= 2
-        for v in range(num_verts):
-            if directed:
-                next_range = num_verts
-            else:
-                next_range = v
-            for x in range(v-k, v+k):
-                w = (x+num_verts) % num_verts
-                p = random.random()
-                if p < probability and w != v:
-                    if directed and random.randint(0, 1) == 1:
-                        graph.insert_edge(Edge(v, w))
-                    else:
-                        graph.insert_edge(Edge(w, v))
-        return graph
+
+def create_random_k_neighbor_graph(num_verts, approx_num_edges, directed, k):
+    """  """
+    graph = AdjSetGraph(num_verts, directed)
+    probability = approx_num_edges/(num_verts*(2*k))
+    if not directed:
+        probability *= 2
+    for v in range(num_verts):
+        if directed:
+            next_range = num_verts
+        else:
+            next_range = v
+        for x in range(v-k, v+k):
+            w = (x+num_verts) % num_verts
+            p = random.random()
+            if p < probability and w != v:
+                if directed and random.randint(0, 1) == 1:
+                    graph.insert_edge(Edge(v, w))
+                else:
+                    graph.insert_edge(Edge(w, v))
+    return graph
+
+
+def random_k_neighbor_graph():
+    print_title("random_k_neighbor_graph")
+    graph = create_random_k_neighbor_graph(num_verts=20, approx_num_edges=20, directed=False, k=3)
+    print_graph(graph)
+    draw_graph(graph)
 
 
 class GraphConnectedComponentsFromEdges:
@@ -285,6 +314,25 @@ class GraphConnectedComponentsFromDFS:
                 self._traverse_component(w)
 
 
+def connected_component_example():
+    print_title("main")
+    graph = read_graph('DriverExample.txt')
+
+    cc1 = GraphConnectedComponentsFromEdges(graph)
+    cc2 = GraphConnectedComponentsFromDFS(graph)
+    print(cc1.component_count(), "cc1 components")
+    print("cc1 0 connected to 1:", cc1.are_connected(0, 1))
+    print("cc1 1 connected to 5:", cc1.are_connected(1, 5))
+    print(cc2.component_count(), "cc2 components")
+    print("cc2 0 connected to 1:", cc2.are_connected(0, 1))
+    print("cc2 1 connected to 5:", cc2.are_connected(1, 5))
+    print("cc2 dfs spanning tree roots:", cc2.dfs_spanning_tree_roots())
+
+    print("Path from 0 to 1:", graph.depth_first_search_path(0, 1))
+    print("Path from 1 to 5:", graph.depth_first_search_path(1, 5))
+    draw_graph(graph)
+
+
 class ClassifyAndPrintEdgesInDFS:
 
     def __init__(self, graph):
@@ -294,7 +342,6 @@ class ClassifyAndPrintEdgesInDFS:
         self._order = [-1] * graph.num_verts()
         self._parent = [-1] * graph.num_verts()
         self._examine_graph()
-        GraphIO().draw_graph(graph)
 
     def _print_level(self, v, w, _type):
         print(f"{' ' * self._depth}{v}-{w} {_type} ({self._order[v]}, {self._order[w]})")
@@ -322,6 +369,12 @@ class ClassifyAndPrintEdgesInDFS:
         self._depth -= 1
 
 
+def classify_and_print_edges():
+    print_title("classify_and_print_edges")
+    graph = read_graph('ClassifyEdgeExample.txt')
+    ClassifyAndPrintEdgesInDFS(graph)
+
+
 class DetectCycleWithDFS:
 
     def __init__(self, graph):
@@ -329,7 +382,7 @@ class DetectCycleWithDFS:
         self._count = 0
         self._order = [-1] * graph.num_verts()
         self._examine_graph()
-        GraphIO().draw_graph(graph)
+        draw_graph(graph)
 
     def _examine_graph(self):
         has_cycle = False
@@ -353,96 +406,60 @@ class DetectCycleWithDFS:
         return False
 
 
-def example(title):
-    print()
-    print(title, '-' * 30)
+def detect_cycle():
+    print_title("detect_cycle")
+    graph = read_graph('ClassifyEdgeExample.txt')
+    DetectCycleWithDFS(graph)
 
 
-class DriverExample:
-    """ Sedgewick 17.6 """
+class PrintTwoWayEulerTour:
 
-    @staticmethod
-    def main():
-        example("main")
-        with open('DriverExample.txt') as f: 
-            lines = f.readlines()
-            num_verts = int(lines[0])
-            print(num_verts, "vertices")
-            graph = AdjListGraph(num_verts, directed=False)
-            io = GraphIO()
-            io.scan_verts(graph, lines[1:])
-            if num_verts < 20:
-                io.print_graph(graph)
-            print(graph.num_edges(), "edges")
+    def __init__(self, graph):
+        self._graph = graph
+        self._count = 0
+        self._order = [-1] * graph.num_verts()
+        self._parent = [-1] * graph.num_verts()
+        self._examine_graph()
+        draw_graph(graph)
 
-            cc1 = GraphConnectedComponentsFromEdges(graph)
-            cc2 = GraphConnectedComponentsFromDFS(graph)
-            print(cc1.component_count(), "cc1 components")
-            print("cc1 0 connected to 1:", cc1.are_connected(0, 1))
-            print("cc1 1 connected to 5:", cc1.are_connected(1, 5))
-            print(cc2.component_count(), "cc2 components")
-            print("cc2 0 connected to 1:", cc2.are_connected(0, 1))
-            print("cc2 1 connected to 5:", cc2.are_connected(1, 5))
-            print("cc2 dfs spanning tree roots:", cc2.dfs_spanning_tree_roots())
+    def _examine_graph(self):
+        for v in range(self._graph.num_verts()):
+            if self._order[v] == -1:
+                self._traverse(Edge(v, v))
 
-            print("Path from 0 to 1:", graph.depth_first_search_path(0, 1))
-            print("Path from 1 to 5:", graph.depth_first_search_path(1, 5))
-            io.draw_graph(graph)
+    def _traverse(self, edge):
+        if edge.v != edge.w:
+            print('-', end="")
+        print(edge.w, end="")
+        self._order[edge.w] = self._count
+        self._count += 1
+        self._parent[edge.w] = edge.v
+        for t in sorted(self._graph.get_adj_iter(edge.w)):
+            if self._order[t] == -1:
+                self._traverse(Edge(edge.w, t))
+            elif t == edge.v:
+                pass
+            elif self._order[t] < self._order[edge.w]:
+                print(f"-{t}-{edge.w}", end="")
+            else:
+                pass
+        if edge.v == edge.w:
+            print()
+        else:
+            print(f"-{edge.v}", end="")
 
-    @staticmethod
-    def random_sparse_graph():
-        example("random_sparse_graph")
-        io = GraphIO()
-        graph = io.create_random_sparse_graph(num_verts=30, num_edges=40, directed=True)
-        io.draw_graph(graph)
 
-    @staticmethod
-    def random_dense_graph():
-        example("random_dense_graph")
-        io = GraphIO()
-        graph = io.create_random_dense_graph(num_verts=10, approx_num_edges=40, directed=True)
-        io.draw_graph(graph)
-        io.print_graph(graph)
-
-    @staticmethod
-    def random_k_neighbor_graph():
-        example("random_k_neighbor_graph")
-        io = GraphIO()
-        graph = io.create_random_k_neighbor_graph(num_verts=20, approx_num_edges=20, directed=False, k=3)
-        io.draw_graph(graph)
-        io.print_graph(graph)
-
-    @staticmethod
-    def classify_and_print_edges():
-        example("classify_and_print_edges")
-        with open('ClassifyEdgeExample.txt') as f:
-            lines = f.readlines()
-            num_verts = int(lines[0])
-            graph = AdjListGraph(num_verts, directed=False)
-            io = GraphIO()
-            io.scan_verts(graph, lines[1:])
-            io.print_graph(graph)
-            ClassifyAndPrintEdgesInDFS(graph)
-
-    @staticmethod
-    def detect_cycle():
-        example("detect_cycle")
-        with open('ClassifyEdgeExample.txt') as f:
-            lines = f.readlines()
-            num_verts = int(lines[0])
-            graph = AdjListGraph(num_verts, directed=False)
-            io = GraphIO()
-            io.scan_verts(graph, lines[1:])
-            io.print_graph(graph)
-            DetectCycleWithDFS(graph)
-
+def euler_tour():
+    print_title("euler_tour")
+    graph = read_graph('ClassifyEdgeExample.txt')
+    PrintTwoWayEulerTour(graph)
 
 
 if __name__ == "__main__":
-    ex = DriverExample()
-    ex.main()
-    ex.random_sparse_graph()
-    ex.random_dense_graph()
-    ex.random_k_neighbor_graph()
-    ex.classify_and_print_edges()
-    ex.detect_cycle()
+    connected_component_example()
+    random_sparse_graph()
+    random_dense_graph()
+    random_k_neighbor_graph()
+    classify_and_print_edges()
+    detect_cycle()
+    euler_tour()
