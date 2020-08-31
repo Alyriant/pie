@@ -254,6 +254,7 @@ class GraphConnectedComponentsFromEdges:
 
 class GraphConnectedComponentsFromDFS:
     """ Sedgewick 18.3 """
+
     def __init__(self, graph):
         self._graph = graph
         self._component_count = 0
@@ -285,7 +286,7 @@ class GraphConnectedComponentsFromDFS:
 
 
 class ClassifyAndPrintEdgesInDFS:
-    """ Sedgewick 18.3 """
+
     def __init__(self, graph):
         self._graph = graph
         self._depth = 0
@@ -318,8 +319,38 @@ class ClassifyAndPrintEdgesInDFS:
                 self._print_level(edge.w, t, "back")
             else:
                 self._print_level(edge.w, t, "down")
-
         self._depth -= 1
+
+
+class DetectCycleWithDFS:
+
+    def __init__(self, graph):
+        self._graph = graph
+        self._count = 0
+        self._order = [-1] * graph.num_verts()
+        self._examine_graph()
+        GraphIO().draw_graph(graph)
+
+    def _examine_graph(self):
+        has_cycle = False
+        v = 0
+        while v < self._graph.num_verts() and has_cycle is False:
+            if self._order[v] == -1:
+                has_cycle = self._has_cycle(Edge(v, v))
+            v += 1
+        print(f"Has cycle: {has_cycle}")
+
+    def _has_cycle(self, edge):
+        self._order[edge.w] = self._count
+        self._count += 1
+        for t in sorted(self._graph.get_adj_iter(edge.w)):
+            if self._order[t] == -1:
+                self._has_cycle(Edge(edge.w, t))
+            elif t == edge.v:
+                pass  # parent
+            else:
+                return True
+        return False
 
 
 def example(title):
@@ -393,6 +424,20 @@ class DriverExample:
             io.print_graph(graph)
             ClassifyAndPrintEdgesInDFS(graph)
 
+    @staticmethod
+    def detect_cycle():
+        example("detect_cycle")
+        with open('ClassifyEdgeExample.txt') as f:
+            lines = f.readlines()
+            num_verts = int(lines[0])
+            graph = AdjListGraph(num_verts, directed=False)
+            io = GraphIO()
+            io.scan_verts(graph, lines[1:])
+            io.print_graph(graph)
+            DetectCycleWithDFS(graph)
+
+
+
 if __name__ == "__main__":
     ex = DriverExample()
     ex.main()
@@ -400,3 +445,4 @@ if __name__ == "__main__":
     ex.random_dense_graph()
     ex.random_k_neighbor_graph()
     ex.classify_and_print_edges()
+    ex.detect_cycle()
