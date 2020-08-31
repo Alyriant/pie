@@ -133,7 +133,7 @@ class GraphIO:
 
     @staticmethod
     def draw_graph(graph):
-        win = GraphWin("My Circle", 1024, 1024)
+        win = GraphWin("Graph", 1024, 1024)
         win.setCoords(-1.1, -1.1, 1.1, 1.1)
 
         angle = 2 * math.pi / graph.num_verts()
@@ -141,6 +141,8 @@ class GraphIO:
         for vert in id:
             a = angle * vert
             c = Circle(Point(math.cos(a), math.sin(a)), 0.01)
+            c.draw(win)
+            c = Text(Point(1.05*math.cos(a), 1.05*math.sin(a)), str(vert))
             c.draw(win)
 
         edges = graph.get_edges()
@@ -265,6 +267,9 @@ class GraphConnectedComponentsFromDFS:
     def are_connected(self, v, w):
         return self._cc_id[v] == self._cc_id[w]
 
+    def dfs_spanning_tree_roots(self):
+        return self._spanning_tree_roots
+
     def _examine_graph(self):
         for v in range(self._graph.num_verts()):
             if self._cc_id[v] == -1:
@@ -279,11 +284,55 @@ class GraphConnectedComponentsFromDFS:
                 self._traverse_component(w)
 
 
+class ClassifyAndPrintEdgesInDFS:
+    """ Sedgewick 18.3 """
+    def __init__(self, graph):
+        self._graph = graph
+        self._depth = 0
+        self._count = 0
+        self._order = [-1] * graph.num_verts()
+        self._parent = [-1] * graph.num_verts()
+        self._examine_graph()
+        GraphIO().draw_graph(graph)
+
+    def _print_level(self, v, w, _type):
+        print(f"{' ' * self._depth}{v}-{w} {_type} ({self._order[v]}, {self._order[w]})")
+
+    def _examine_graph(self):
+        for v in range(self._graph.num_verts()):
+            if self._order[v] == -1:
+                self._traverse(Edge(v, v))
+
+    def _traverse(self, edge):
+        self._print_level(edge.v, edge.w, "tree")
+        self._depth += 1
+        self._order[edge.w] = self._count
+        self._count += 1
+        self._parent[edge.w] = edge.v
+        for t in sorted(self._graph.get_adj_iter(edge.w)):
+            if self._order[t] == -1:
+                self._traverse(Edge(edge.w, t))
+            elif t == edge.v:
+                self._print_level(edge.w, t,  "parent")
+            elif self._order[t] < self._order[edge.w]:
+                self._print_level(edge.w, t, "back")
+            else:
+                self._print_level(edge.w, t, "down")
+
+        self._depth -= 1
+
+
+def example(title):
+    print()
+    print(title, '-' * 30)
+
+
 class DriverExample:
     """ Sedgewick 17.6 """
 
     @staticmethod
     def main():
+        example("main")
         with open('DriverExample.txt') as f: 
             lines = f.readlines()
             num_verts = int(lines[0])
@@ -294,7 +343,7 @@ class DriverExample:
             if num_verts < 20:
                 io.print_graph(graph)
             print(graph.num_edges(), "edges")
-            
+
             cc1 = GraphConnectedComponentsFromEdges(graph)
             cc2 = GraphConnectedComponentsFromDFS(graph)
             print(cc1.component_count(), "cc1 components")
@@ -303,6 +352,7 @@ class DriverExample:
             print(cc2.component_count(), "cc2 components")
             print("cc2 0 connected to 1:", cc2.are_connected(0, 1))
             print("cc2 1 connected to 5:", cc2.are_connected(1, 5))
+            print("cc2 dfs spanning tree roots:", cc2.dfs_spanning_tree_roots())
 
             print("Path from 0 to 1:", graph.depth_first_search_path(0, 1))
             print("Path from 1 to 5:", graph.depth_first_search_path(1, 5))
@@ -310,12 +360,14 @@ class DriverExample:
 
     @staticmethod
     def random_sparse_graph():
+        example("random_sparse_graph")
         io = GraphIO()
         graph = io.create_random_sparse_graph(num_verts=30, num_edges=40, directed=True)
         io.draw_graph(graph)
 
     @staticmethod
     def random_dense_graph():
+        example("random_dense_graph")
         io = GraphIO()
         graph = io.create_random_dense_graph(num_verts=10, approx_num_edges=40, directed=True)
         io.draw_graph(graph)
@@ -323,15 +375,28 @@ class DriverExample:
 
     @staticmethod
     def random_k_neighbor_graph():
+        example("random_k_neighbor_graph")
         io = GraphIO()
         graph = io.create_random_k_neighbor_graph(num_verts=20, approx_num_edges=20, directed=False, k=3)
         io.draw_graph(graph)
         io.print_graph(graph)
 
+    @staticmethod
+    def classify_and_print_edges():
+        example("classify_and_print_edges")
+        with open('ClassifyEdgeExample.txt') as f:
+            lines = f.readlines()
+            num_verts = int(lines[0])
+            graph = AdjListGraph(num_verts, directed=False)
+            io = GraphIO()
+            io.scan_verts(graph, lines[1:])
+            io.print_graph(graph)
+            ClassifyAndPrintEdgesInDFS(graph)
 
 if __name__ == "__main__":
     ex = DriverExample()
     ex.main()
-    #ex.random_sparse_graph()
-    #ex.random_dense_graph()
-    #ex.random_k_neighbor_graph()
+    ex.random_sparse_graph()
+    ex.random_dense_graph()
+    ex.random_k_neighbor_graph()
+    ex.classify_and_print_edges()
