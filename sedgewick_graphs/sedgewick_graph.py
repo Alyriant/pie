@@ -242,7 +242,7 @@ def random_k_neighbor_graph():
     draw_graph(graph)
 
 
-class GraphConnectedComponentsFromEdges:
+class ConnectedComponentsFromEdges:
     """ Creates trees for each connected component, which are
     gradually made more shallow to give quicker answers the
     more they are queried. Sedgewick 17.5, 1.3, 1.4 """
@@ -281,7 +281,7 @@ class GraphConnectedComponentsFromEdges:
         return i == j
 
 
-class GraphConnectedComponentsFromDFS:
+class ConnectedComponentsFromDFS:
     """ Sedgewick 18.3 """
 
     def __init__(self, graph):
@@ -318,8 +318,8 @@ def connected_component_example():
     print_title("main")
     graph = read_graph('DriverExample.txt')
 
-    cc1 = GraphConnectedComponentsFromEdges(graph)
-    cc2 = GraphConnectedComponentsFromDFS(graph)
+    cc1 = ConnectedComponentsFromEdges(graph)
+    cc2 = ConnectedComponentsFromDFS(graph)
     print(cc1.component_count(), "cc1 components")
     print("cc1 0 connected to 1:", cc1.are_connected(0, 1))
     print("cc1 1 connected to 5:", cc1.are_connected(1, 5))
@@ -396,7 +396,7 @@ class DetectCycleWithDFS:
     def _has_cycle(self, edge):
         self._order[edge.w] = self._count
         self._count += 1
-        for t in sorted(self._graph.get_adj_iter(edge.w)):
+        for t in self._graph.get_adj_iter(edge.w):
             if self._order[t] == -1:
                 self._has_cycle(Edge(edge.w, t))
             elif t == edge.v:
