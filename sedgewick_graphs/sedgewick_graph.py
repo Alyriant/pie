@@ -1,3 +1,4 @@
+from collections import deque
 from graphics import *
 import math
 import random
@@ -57,6 +58,38 @@ class Graph:
         search(v)
         return path
 
+    def breadth_first_search_path(self, a, b):
+        visited = [False] * self.num_verts()
+        parent = [-1] * self.num_verts()
+        queue = deque()
+
+        def search(edge):
+            parent[edge.w] = edge.v
+            if edge.w == b:
+                return True
+            visited[edge.w] = True
+            neighbors = self.get_adj_iter(edge.w)
+            for vert in neighbors:
+                if not visited[vert]:
+                    queue.appendleft(Edge(edge.w, vert))
+            return False
+
+        found = False
+        queue.appendleft(Edge(-1, a))
+        while queue and not found:
+            found = search(queue.pop())
+
+        path = deque()
+        path_str = ""
+        if found:
+            p = b
+            while p != -1:
+                path.appendleft(p)
+                p = parent[p]
+            path_str = "-".join([str(node) for node in path])
+
+        return path_str
+
 
 class AdjListGraph(Graph):
     """ Adjacency-list multigraph based on Sedgewick, 17.1 """
@@ -67,10 +100,14 @@ class AdjListGraph(Graph):
 
     def insert_edge(self, edge):
         self._verts[edge.v].append(edge.w)
+        if not self.is_directed():
+            self._verts[edge.w].append(edge.v)
         self._num_edges += 1
 
     def remove_edge(self, edge):
         self._verts[edge.v].remove(edge.w)
+        if not self.is_directed():
+            self._verts[edge.w].remove(edge.v)
         self._num_edges -= 1
 
     def get_adj_iter(self, v):
@@ -129,6 +166,14 @@ def read_graph(filename, directed=False):
         return graph
 
 
+def graph_from_array(num_verts, edges, directed=False):
+    graph = AdjListGraph(num_verts, directed)
+    for edge in edges:
+        graph.insert_edge(Edge(edge[0], edge[1]))
+    print_graph(graph)
+    return graph
+
+
 def scan_verts(graph, lines):
     """ read lines of vert number pairs representing edges and add to the graph """
     for line in lines:
@@ -136,8 +181,6 @@ def scan_verts(graph, lines):
         v = int(v)
         w = int(w)
         graph.insert_edge(Edge(v, w))
-        if not graph.is_directed():
-            graph.insert_edge(Edge(w, v))
 
 
 def draw_graph(graph):
@@ -340,7 +383,6 @@ class ClassifyAndPrintEdgesInDFS:
         self._depth = 0
         self._count = 0
         self._order = [-1] * graph.num_verts()
-        self._parent = [-1] * graph.num_verts()
         self._examine_graph()
 
     def _print_level(self, v, w, _type):
@@ -356,7 +398,6 @@ class ClassifyAndPrintEdgesInDFS:
         self._depth += 1
         self._order[edge.w] = self._count
         self._count += 1
-        self._parent[edge.w] = edge.v
         for t in sorted(self._graph.get_adj_iter(edge.w)):
             if self._order[t] == -1:
                 self._traverse(Edge(edge.w, t))
@@ -373,6 +414,57 @@ def classify_and_print_edges():
     print_title("classify_and_print_edges")
     graph = read_graph('ClassifyEdgeExample.txt')
     ClassifyAndPrintEdgesInDFS(graph)
+
+
+class FindCriticalEdgesAndArticulationPoints:
+
+    def __init__(self, graph):
+        self._graph = graph
+        self._order = [-1] * graph.num_verts()
+        self._low = [-1] * graph.num_verts()
+        self._count = -1
+        self._critical_edges = []
+        self._articulation_points = set()
+        self._find_all()
+        draw_graph(graph)
+
+    def _find_all(self):
+        for v in range(self._graph.num_verts()):
+            if self._order[v] == -1:
+                self._dfs(v, v)
+        self._print_all()
+
+    def _dfs(self, v, parent):
+        self._count += 1
+        self._order[v] = self._count
+        self._low[v] = self._count
+        adj = self._graph.get_adj_iter(v)
+        children = 0
+        for t in adj:
+            if self._order[t] == -1:
+                children += 1
+                self._dfs(t, v)
+                if self._order[t] == self._low[t]:
+                    self._critical_edges.append((v, t))
+                    # self._articulation_points.add(v)
+                    # self._articulation_points.add(t)
+                self._low[v] = min(self._low[v], self._low[t])
+                if self._low[t] >= self._order[v] and v != parent:
+                    self._articulation_points.add(v)
+            elif t != parent:
+                self._low[v] = min(self._low[v], self._order[t])
+        if v == parent and children > 1:
+            self._articulation_points.add(v)
+
+    def _print_all(self):
+        print(f"Critical edges: {sorted(self._critical_edges)}")
+        print(f"Articulation points: {sorted(self._articulation_points)}")
+
+
+def detect_critical_edges_and_articulation_points():
+    print_title("detect_critical_edges_and_articulation_points")
+    graph = read_graph('CriticalAndArticulation.txt')
+    FindCriticalEdgesAndArticulationPoints(graph)
 
 
 class DetectCycleWithDFS:
@@ -455,6 +547,13 @@ def euler_tour():
     PrintTwoWayEulerTour(graph)
 
 
+def bfs_test():
+    print_title("bfs_test")
+    graph = graph_from_array(6, [[0,1],[1,2],[2,3],[3,4],[0,5],[5,4]])
+    print(f"Path from 0 to 4: {graph.breadth_first_search_path(0, 4)}")
+    draw_graph(graph)
+
+
 if __name__ == "__main__":
     connected_component_example()
     random_sparse_graph()
@@ -463,3 +562,5 @@ if __name__ == "__main__":
     classify_and_print_edges()
     detect_cycle()
     euler_tour()
+    detect_critical_edges_and_articulation_points()
+    bfs_test()
