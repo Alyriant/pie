@@ -1,159 +1,13 @@
-from collections import deque
 from graphics import *
 import math
 import random
 
-
-class Edge:
-
-    def __init__(self, v, w):
-        self.v = v
-        self.w = w
-
-
-class Graph:
-
-    def __init__(self, num_verts, directed):
-        self._num_verts = num_verts
-        self._directed = directed
-        self._num_edges = 0
-
-    def num_verts(self):
-        return self._num_verts
-
-    def num_edges(self):
-        return self._num_edges
-
-    def is_directed(self):
-        return self._directed
-
-    def get_edges(self):
-        """ Sedgewick 17.2 """
-
-        edges = []
-        for v in range(self.num_verts()):
-            for w in self.get_adj_iter(v):
-                if self.is_directed() or v < w:
-                    edges.append(Edge(v, w))
-        return edges
-
-    def depth_first_search_path(self, v, w):
-        """ Sedgewick 17.16 """
-        visited = [False] * self.num_verts()
-        path = []
-
-        def search(u):
-            path.append(u)
-            if u == w:
-                return True
-            visited[u] = True
-            neighbors = self.get_adj_iter(u)
-            for vert in neighbors:
-                if not visited[vert]:
-                    if search(vert):
-                        return True
-            path.pop()
-            return False
-
-        search(v)
-        return path
-
-    def breadth_first_search_path(self, a, b):
-        visited = [False] * self.num_verts()
-        parent = [-1] * self.num_verts()
-        queue = deque()
-
-        def search(edge):
-            parent[edge.w] = edge.v
-            if edge.w == b:
-                return True
-            visited[edge.w] = True
-            neighbors = self.get_adj_iter(edge.w)
-            for vert in neighbors:
-                if not visited[vert]:
-                    queue.appendleft(Edge(edge.w, vert))
-            return False
-
-        found = False
-        queue.appendleft(Edge(-1, a))
-        while queue and not found:
-            found = search(queue.pop())
-
-        path = deque()
-        path_str = ""
-        if found:
-            p = b
-            while p != -1:
-                path.appendleft(p)
-                p = parent[p]
-            path_str = "-".join([str(node) for node in path])
-
-        return path_str
-
-
-class AdjListGraph(Graph):
-    """ Adjacency-list multigraph based on Sedgewick, 17.1 """
-
-    def __init__(self, num_verts, directed):
-        super().__init__(num_verts, directed)
-        self._verts = [list() for _ in range(num_verts)]
-
-    def insert_edge(self, edge):
-        self._verts[edge.v].append(edge.w)
-        if not self.is_directed():
-            self._verts[edge.w].append(edge.v)
-        self._num_edges += 1
-
-    def remove_edge(self, edge):
-        self._verts[edge.v].remove(edge.w)
-        if not self.is_directed():
-            self._verts[edge.w].remove(edge.v)
-        self._num_edges -= 1
-
-    def get_adj_iter(self, v):
-        return self._verts[v]
-
-
-class AdjSetGraph(Graph):
-    """ Adjacency-set graph based on Sedgewick, 17.1 """
-
-    def __init__(self, num_verts, directed):
-        super().__init__(num_verts, directed)
-        self._verts = [set() for _ in range(num_verts)]
-
-    def insert_edge(self, edge):
-        if edge.w not in self._verts[edge.v]:
-            self._verts[edge.v].add(edge.w)
-            self._num_edges += 1
-            if not self._directed:
-                self._verts[edge.w].add(edge.v)
-
-    def remove_edge(self, edge):
-        if edge.w in self._verts[edge.v]:
-            self._verts[edge.v].remove(edge.w)
-            self._num_edges -= 1
-            if not self._directed:
-                self._verts[edge.w].remove(edge.v)
-
-    def get_adj_iter(self, v):
-        return list(self._verts[v])
+from graphs.graph import *
 
 
 def print_title(title):
     print()
     print(title, '-' * 30)
-
-
-def print_graph(graph):
-    """ Sedgewick 17.3 """
-
-    print(f"directed: {graph.is_directed()}")
-    print(f"num verts: {graph.num_verts()}")
-    print(f"num edges: {graph.num_edges()}")
-    for v in range(graph.num_verts()):
-        print(v, ":", end=" ")
-        w = sorted(list(graph.get_adj_iter(v)))
-        print(w)
 
 
 def read_graph(filename, directed=False):
@@ -188,12 +42,12 @@ def draw_graph(graph):
     win.setCoords(-1.1, -1.1, 1.1, 1.1)
 
     angle = 2 * math.pi / graph.num_verts()
-    id = list(range(graph.num_verts()))
-    for vert in id:
+    _id = list(range(graph.num_verts()))
+    for vert in _id:
         a = angle * vert
         c = Circle(Point(math.cos(a), math.sin(a)), 0.01)
         c.draw(win)
-        c = Text(Point(1.05*math.cos(a), 1.05*math.sin(a)), str(vert))
+        c = Text(Point(1.05 * math.cos(a), 1.05 * math.sin(a)), str(vert))
         c.draw(win)
 
     edges = graph.get_edges()
@@ -211,17 +65,6 @@ def draw_graph(graph):
     win.close()  # Close window when done
 
 
-def create_random_sparse_graph(num_verts, num_edges, directed):
-    """ Sedgewick 17.12 """
-    graph = AdjSetGraph(num_verts, directed)
-    while graph.num_edges() < num_edges:
-        v = random.randint(0, num_verts-1)
-        w = random.randint(0, num_verts-1)
-        if v != w:
-            graph.insert_edge(Edge(v, w))
-    return graph
-
-
 def random_sparse_graph():
     print_title("random_sparse_graph")
     graph = create_random_sparse_graph(num_verts=30, num_edges=40, directed=True)
@@ -229,53 +72,11 @@ def random_sparse_graph():
     draw_graph(graph)
 
 
-def create_random_dense_graph(num_verts, approx_num_edges, directed):
-    """ Sedgewick 17.13 """
-    graph = AdjSetGraph(num_verts, directed)
-    probability = approx_num_edges/(num_verts*(num_verts-1))
-    if not directed:
-        probability *= 2
-    for v in range(num_verts):
-        if directed:
-            next_range = num_verts
-        else:
-            next_range = v
-        for w in range(next_range):
-            if random.random() < probability and w != v:
-                if directed and random.randint(0, 1) == 1:
-                    graph.insert_edge(Edge(v, w))
-                else:
-                    graph.insert_edge(Edge(w, v))
-    return graph
-
-
 def random_dense_graph():
     print_title("random_dense_graph")
     graph = create_random_dense_graph(num_verts=10, approx_num_edges=40, directed=True)
     print_graph(graph)
     draw_graph(graph)
-
-
-def create_random_k_neighbor_graph(num_verts, approx_num_edges, directed, k):
-    """  """
-    graph = AdjSetGraph(num_verts, directed)
-    probability = approx_num_edges/(num_verts*(2*k))
-    if not directed:
-        probability *= 2
-    for v in range(num_verts):
-        if directed:
-            next_range = num_verts
-        else:
-            next_range = v
-        for x in range(v-k, v+k):
-            w = (x+num_verts) % num_verts
-            p = random.random()
-            if p < probability and w != v:
-                if directed and random.randint(0, 1) == 1:
-                    graph.insert_edge(Edge(v, w))
-                else:
-                    graph.insert_edge(Edge(w, v))
-    return graph
 
 
 def random_k_neighbor_graph():
@@ -289,7 +90,7 @@ class ConnectedComponentsFromEdges:
     """ Creates trees for each connected component, which are
     gradually made more shallow to give quicker answers the
     more they are queried. Sedgewick 17.5, 1.3, 1.4 """
-    
+
     def __init__(self, graph):
         _id = list(range(graph.num_verts()))
         edges = graph.get_edges()
@@ -309,10 +110,10 @@ class ConnectedComponentsFromEdges:
             if i == _id[i]:
                 self._component_count += 1
         self._id = _id
-        
+
     def component_count(self):
         return self._component_count
-        
+
     def are_connected(self, i, j):
         _id = self._id
         while i != _id[i]:
@@ -371,8 +172,8 @@ def connected_component_example():
     print("cc2 1 connected to 5:", cc2.are_connected(1, 5))
     print("cc2 dfs spanning tree roots:", cc2.dfs_spanning_tree_roots())
 
-    print("Path from 0 to 1:", graph.depth_first_search_path(0, 1))
-    print("Path from 1 to 5:", graph.depth_first_search_path(1, 5))
+    print("Path from 0 to 1:", path_from_dfs(graph, 0, 1))
+    print("Path from 1 to 5:", path_from_dfs(graph, 1, 5))
     draw_graph(graph)
 
 
@@ -402,7 +203,7 @@ class ClassifyAndPrintEdgesInDFS:
             if self._order[t] == -1:
                 self._traverse(Edge(edge.w, t))
             elif t == edge.v:
-                self._print_level(edge.w, t,  "parent")
+                self._print_level(edge.w, t, "parent")
             elif self._order[t] < self._order[edge.w]:
                 self._print_level(edge.w, t, "back")
             else:
@@ -446,8 +247,6 @@ class FindCriticalEdgesAndArticulationPoints:
                 self._dfs(t, v)
                 if self._order[t] == self._low[t]:
                     self._critical_edges.append((v, t))
-                    # self._articulation_points.add(v)
-                    # self._articulation_points.add(t)
                 self._low[v] = min(self._low[v], self._low[t])
                 if self._low[t] >= self._order[v] and v != parent:
                     self._articulation_points.add(v)
@@ -549,8 +348,8 @@ def euler_tour():
 
 def bfs_test():
     print_title("bfs_test")
-    graph = graph_from_array(6, [[0,1],[1,2],[2,3],[3,4],[0,5],[5,4]])
-    print(f"Path from 0 to 4: {graph.breadth_first_search_path(0, 4)}")
+    graph = graph_from_array(6, [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 4]])
+    print(f"Path from 0 to 4: {path_from_bfs(graph, 0, 4)}")
     draw_graph(graph)
 
 
