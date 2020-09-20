@@ -1,7 +1,6 @@
-from graphics import *
 import math
-import random
 
+from graphics import *
 from graphs.graph import *
 
 
@@ -18,14 +17,6 @@ def read_graph(filename, directed=False):
         scan_verts(graph, lines[1:])
         print_graph(graph)
         return graph
-
-
-def graph_from_array(num_verts, edges, directed=False):
-    graph = AdjListGraph(num_verts, directed)
-    for edge in edges:
-        graph.insert_edge(Edge(edge[0], edge[1]))
-    print_graph(graph)
-    return graph
 
 
 def scan_verts(graph, lines):
@@ -289,7 +280,9 @@ class DetectCycleWithDFS:
         self._count += 1
         for t in self._graph.get_adj_iter(edge.w):
             if self._order[t] == -1:
-                self._has_cycle(Edge(edge.w, t))
+                has = self._has_cycle(Edge(edge.w, t))
+                if has:
+                    return True
             elif t == edge.v:
                 pass  # parent
             else:
@@ -348,7 +341,8 @@ def euler_tour():
 
 def bfs_test():
     print_title("bfs_test")
-    graph = graph_from_array(6, [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 4]])
+    graph = AdjListGraph(6, directed=False)
+    graph.add_edges_from_array([[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 4]])
     print(f"Path from 0 to 4: {path_from_bfs(graph, 0, 4)}")
     draw_graph(graph)
 

@@ -36,7 +36,18 @@ class Graph:
                     edges.append(Edge(v, w))
         return edges
 
-    def get_adj_iter(self, v):
+    def add_edges_from_array(self, arr):
+        for edge in arr:
+            self.insert_edge(Edge(edge[0], edge[1]))
+
+    # override these
+    def insert_edge(self, _):
+        pass
+
+    def remove_edge(self, _):
+        pass
+
+    def get_adj_iter(self, _):
         return []
 
 
