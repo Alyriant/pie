@@ -10,12 +10,14 @@ class ClassifyAndPrintDigraphEdges:
         self._post = [-1] * graph.num_verts()
         self._pre_count = 0
         self._post_count = 0
+        self._is_dag = True
         self._top_level()
 
     def _top_level(self):
         for v in range(self._graph.num_verts()):
             if self._pre[v] == -1:
                 self._dfs(v, v)
+        print(f"Graph is DAG: {self._is_dag}")
 
     def _dfs(self, w, parent):
         self._pre[w] = self._pre_count
@@ -28,6 +30,7 @@ class ClassifyAndPrintDigraphEdges:
                 self._dfs(t, w)
             elif self._post[t] == -1:
                 self._print_level(w, t, "back")
+                self._is_dag = False
             elif self._pre[t] > self._pre[w]:
                 self._print_level(w, t, "down")
             else:
