@@ -31,7 +31,7 @@ class Graph:
 
         edges = []
         for v in range(self.num_verts()):
-            for w in self.get_adj_iter(v):
+            for w in self.get_adjacent(v):
                 if self.is_directed() or v < w:
                     edges.append(Edge(v, w))
         return edges
@@ -47,7 +47,7 @@ class Graph:
     def remove_edge(self, _):
         pass
 
-    def get_adj_iter(self, _):
+    def get_adjacent(self, _):
         return []
 
 
@@ -70,7 +70,7 @@ class AdjListGraph(Graph):
             self._verts[edge.w].remove(edge.v)
         self._num_edges -= 1
 
-    def get_adj_iter(self, v):
+    def get_adjacent(self, v):
         return self._verts[v]
 
 
@@ -95,7 +95,7 @@ class AdjSetGraph(Graph):
             if not self._directed:
                 self._verts[edge.w].remove(edge.v)
 
-    def get_adj_iter(self, v):
+    def get_adjacent(self, v):
         return list(self._verts[v])
 
 
@@ -158,7 +158,7 @@ def path_from_dfs(graph, v, w):
         if u == w:
             return True
         visited[u] = True
-        neighbors = graph.get_adj_iter(u)
+        neighbors = graph.get_adjacent(u)
         for vert in neighbors:
             if not visited[vert]:
                 if search(vert):
@@ -180,7 +180,7 @@ def path_from_bfs(graph, a, b):
         if edge.w == b:
             return True
         visited[edge.w] = True
-        neighbors = graph.get_adj_iter(edge.w)
+        neighbors = graph.get_adjacent(edge.w)
         for vert in neighbors:
             if not visited[vert]:
                 queue.appendleft(Edge(edge.w, vert))
@@ -210,4 +210,4 @@ def print_graph(graph):
     print(f"num verts: { graph.num_verts() }")
     print(f"num edges: { graph.num_edges() }")
     for v in range(graph.num_verts()):
-        print(f"{ v }: { sorted(list(graph.get_adj_iter(v))) }")
+        print(f"{ v }: { sorted(list(graph.get_adjacent(v))) }")
