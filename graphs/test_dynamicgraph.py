@@ -1,9 +1,11 @@
 from unittest import TestCase
 from graphs.dynamicgraph import *
 
+
 class Test(TestCase):
     def test_create_random_dense_graph(self):
-        graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=False, multigraph=False, self_loops=False)
+        graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=False, multigraph=False,
+                                          self_loops=False)
         self.assertEqual(graph.num_verts(), 10)
         self.assertEqual(graph.num_edges(), 25)
         self.assertFalse(graph.is_directed())
@@ -35,7 +37,8 @@ class Test(TestCase):
         self.assertTrue(has_self_loops(graph))
 
     def test_create_random_k_neighbor_graph(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=False, multigraph=False, self_loops=False)
+        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=False, multigraph=False,
+                                               self_loops=False)
         self.assertEqual(graph.num_verts(), 10)
         self.assertEqual(graph.num_edges(), 10)
         self.assertFalse(graph.is_directed())
@@ -43,7 +46,8 @@ class Test(TestCase):
         self.assertFalse(has_self_loops(graph))
 
     def test_create_random_k_neighbor_graph_2(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=False, multigraph=True, self_loops=True)
+        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=False, multigraph=True,
+                                               self_loops=True)
         self.assertEqual(graph.num_verts(), 10)
         self.assertEqual(graph.num_edges(), 10)
         self.assertFalse(graph.is_directed())
@@ -51,7 +55,8 @@ class Test(TestCase):
         self.assertTrue(has_self_loops(graph))
 
     def test_create_random_k_neighbor_graph_directed(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=True, multigraph=False, self_loops=False)
+        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=True, multigraph=False,
+                                               self_loops=False)
         self.assertEqual(graph.num_verts(), 10)
         self.assertEqual(graph.num_edges(), 10)
         self.assertTrue(graph.is_directed())
@@ -59,7 +64,8 @@ class Test(TestCase):
         self.assertFalse(has_self_loops(graph))
 
     def test_create_random_k_neighbor_graph_directed_2(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=True, multigraph=True, self_loops=True)
+        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=True, multigraph=True,
+                                               self_loops=True)
         self.assertEqual(graph.num_verts(), 10)
         self.assertEqual(graph.num_edges(), 10)
         self.assertTrue(graph.is_directed())
@@ -67,7 +73,8 @@ class Test(TestCase):
         self.assertTrue(has_self_loops(graph))
 
     def test_create_random_sparse_graph(self):
-        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=False, multigraph=False, self_loops=False)
+        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=False, multigraph=False,
+                                           self_loops=False)
         self.assertEqual(graph.num_verts(), 10)
         self.assertEqual(graph.num_edges(), 25)
         self.assertFalse(graph.is_directed())
@@ -83,7 +90,8 @@ class Test(TestCase):
         self.assertTrue(has_self_loops(graph))
 
     def test_create_random_sparse_graph_directed(self):
-        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=True, multigraph=False, self_loops=False)
+        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=True, multigraph=False,
+                                           self_loops=False)
         self.assertEqual(graph.num_verts(), 10)
         self.assertEqual(graph.num_edges(), 25)
         self.assertTrue(graph.is_directed())
