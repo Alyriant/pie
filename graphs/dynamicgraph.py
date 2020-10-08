@@ -166,7 +166,6 @@ def path_from_dfs(graph, a, b):
     path = []
 
     def search(u):
-        print("search {u}")
         path.append(u)
         visited.add(u)
         if u == b and len(path) > 1:
@@ -200,7 +199,6 @@ def path_from_bfs(graph, a, b):
     path = None
 
     def search(edge):
-        print(f"search {edge}")
         parent[edge[1]] = edge[0]
         if edge[1] == b and edge[0] != -1:
             return True
@@ -225,7 +223,6 @@ def path_from_bfs(graph, a, b):
             p = b
             while p != -1:
                 path.appendleft(p)
-                print("appending", p)
                 if is_cycle and p == a:
                     times_seen += 1
                     if times_seen == 2:
