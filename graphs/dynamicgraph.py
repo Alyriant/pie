@@ -112,7 +112,7 @@ def create_random_k_neighbor_graph(k, num_verts, num_edges, directed, multigraph
         graph.insert_edge((v, v))
     if multigraph:
         v = random.randint(0, num_verts - 1)
-        w = (v+k) % num_verts
+        w = (v + k) % num_verts
         graph.insert_edge((v, w))
         graph.insert_edge((v, w))
 
@@ -231,7 +231,8 @@ def path_from_bfs(graph, a, b):
                     if times_seen == 2:
                         break
                 p = parent[p]
-        else: print("not found")
+        else:
+            print("not found")
 
     path_str = ""
     if path:
@@ -266,3 +267,81 @@ def print_graph(graph):
     print(f"num edges: {graph.num_edges()}")
     for v in sorted(graph.get_verts()):
         print(f"{v}: {sorted(list(graph.get_adjacent(v)))}")
+
+
+def classify_and_print_edges(graph):
+    depth = 0
+    pre_count = 0
+    pre = {v: -1 for v in graph.get_verts()}
+
+    def classify_and_print_undirected_graph_edges():
+
+        def undirected_dfs(v, parent):
+            nonlocal pre_count
+            nonlocal depth
+
+            pre[v] = pre_count
+            pre_count += 1
+            if parent == -1:
+                print(f"{v} : root")
+            else:
+                print(f"{' ' * depth}{parent}-{v} : tree")
+            depth += 1
+
+            for t in sorted(graph.get_adjacent(v)):
+                if pre[t] == -1:
+                    undirected_dfs(t, parent=v)
+                elif v == t:
+                    print(f"{' ' * depth}{v}-{t} : self-loop")
+                elif t == parent:
+                    print(f"{' ' * depth}{v}-{t} : parent")
+                elif pre[t] < pre[v]:
+                    print(f"{' ' * depth}{v}-{t} : back")
+                else:
+                    print(f"{' ' * depth}{v}-{t} : down")
+
+            depth -= 1
+
+        for v in sorted(graph.get_verts()):
+            if pre[v] == -1:
+                undirected_dfs(v, parent=-1)
+
+    def classify_and_print_digraph_edges():
+
+        post = {v: False for v in graph.get_verts()}
+
+        def directed_dfs(v, parent):
+            nonlocal pre_count
+            nonlocal depth
+
+            pre[v] = pre_count
+            pre_count += 1
+            if parent == -1:
+                print(f"{v} : root")
+            else:
+                print(f"{' ' * depth}{parent}->{v} : tree")
+            depth += 1
+
+            for t in sorted(graph.get_adjacent(v)):
+                if pre[t] == -1:
+                    directed_dfs(t, parent=v)
+                elif t == v:
+                    print(f"{' ' * depth}{v}->{t} : self-loop")
+                elif not post[t]:
+                    print(f"{' ' * depth}{v}->{t} : back")
+                elif pre[t] > pre[v]:
+                    print(f"{' ' * depth}{v}->{t} : down")
+                else:
+                    print(f"{' ' * depth}{v}->{t} : cross")
+
+            depth -= 1
+            post[v] = True
+
+        for v in sorted(graph.get_verts()):
+            if pre[v] == -1:
+                directed_dfs(v, parent=-1)
+
+    if graph.is_directed():
+        classify_and_print_digraph_edges()
+    else:
+        classify_and_print_undirected_graph_edges()
