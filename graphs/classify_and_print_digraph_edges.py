@@ -24,7 +24,7 @@ class ClassifyAndPrintDigraphEdges:
         self._pre_count += 1
         self._print_level(parent, w, "tree")
         self._depth += 1
-        adj = self._graph.get_adj_iter(w)
+        adj = self._graph.get_adjacent(w)
         for t in adj:
             if self._pre[t] == -1:
                 self._dfs(t, w)

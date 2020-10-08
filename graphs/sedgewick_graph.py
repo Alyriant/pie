@@ -144,7 +144,7 @@ class ConnectedComponentsFromDFS:
 
     def _traverse_component(self, v):
         self._cc_id[v] = self._component_count
-        for w in self._graph.get_adj_iter(v):
+        for w in self._graph.get_adjacent(v):
             if self._cc_id[w] == -1:
                 self._traverse_component(w)
 
@@ -190,7 +190,7 @@ class ClassifyAndPrintEdgesInDFS:
         self._depth += 1
         self._order[edge.w] = self._count
         self._count += 1
-        for t in sorted(self._graph.get_adj_iter(edge.w)):
+        for t in sorted(self._graph.get_adjacent(edge.w)):
             if self._order[t] == -1:
                 self._traverse(Edge(edge.w, t))
             elif t == edge.v:
@@ -230,7 +230,7 @@ class FindCriticalEdgesAndArticulationPoints:
         self._count += 1
         self._order[v] = self._count
         self._low[v] = self._count
-        adj = self._graph.get_adj_iter(v)
+        adj = self._graph.get_adjacent(v)
         children = 0
         for t in adj:
             if self._order[t] == -1:
@@ -278,7 +278,7 @@ class DetectCycleWithDFS:
     def _has_cycle(self, edge):
         self._order[edge.w] = self._count
         self._count += 1
-        for t in self._graph.get_adj_iter(edge.w):
+        for t in self._graph.get_adjacent(edge.w):
             if self._order[t] == -1:
                 has = self._has_cycle(Edge(edge.w, t))
                 if has:
@@ -318,7 +318,7 @@ class PrintTwoWayEulerTour:
         self._order[edge.w] = self._count
         self._count += 1
         self._parent[edge.w] = edge.v
-        for t in sorted(self._graph.get_adj_iter(edge.w)):
+        for t in sorted(self._graph.get_adjacent(edge.w)):
             if self._order[t] == -1:
                 self._traverse(Edge(edge.w, t))
             elif t == edge.v:
