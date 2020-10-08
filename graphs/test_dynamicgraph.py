@@ -210,6 +210,10 @@ class Test(TestCase):
         self.assertTrue(is_multigraph(graph))
 
         graph = DynamicGraph(directed=False)
+        graph.add_edges_from_array([[0, 1], [2, 2], [2, 2]])
+        self.assertTrue(is_multigraph(graph))
+
+        graph = DynamicGraph(directed=False)
         graph.add_edges_from_array([[0, 1], [1, 2], [2, 3]])
         self.assertFalse(is_multigraph(graph))
 
