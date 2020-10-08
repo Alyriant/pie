@@ -231,8 +231,6 @@ def path_from_bfs(graph, a, b):
                     if times_seen == 2:
                         break
                 p = parent[p]
-        else:
-            print("not found")
 
     path_str = ""
     if path:
