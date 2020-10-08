@@ -240,3 +240,30 @@ class Test(TestCase):
         graph = DynamicGraph(directed=True)
         graph.add_edges_from_array([[0, 1], [0, 2], [1, 1], [1, 2], [2, 0], [3, 2]])
         classify_and_print_edges(graph)
+
+    def test_is_dag(self):
+        graph = DynamicGraph(directed=False)
+        self.assertFalse(is_dag(graph))
+
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [0, 1], [1, 2]])
+        self.assertTrue(is_dag(graph))
+
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [1, 1]])
+        self.assertFalse(is_dag(graph))
+
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [1, 2], [2, 1]])
+        self.assertFalse(is_dag(graph))
+
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [1, 2], [2, 0]])
+        self.assertFalse(is_dag(graph))
+
+    def test_convert_to_dag(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [0, 1], [1, 1], [1, 1], [1, 2], [2, 0], [2, 1]])
+        self.assertFalse(is_dag(graph))
+        convert_to_dag(graph)
+        self.assertTrue(is_dag(graph))

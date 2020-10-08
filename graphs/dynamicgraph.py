@@ -13,6 +13,11 @@ class DynamicGraph:
     def is_directed(self):
         return self._directed
 
+    def set_is_directed(self):
+        if not self._directed:
+            self._directed = True
+            self._num_edges *= 2
+
     def num_verts(self):
         return len(self._verts)
 
@@ -256,6 +261,7 @@ def is_multigraph(graph):
 
 def print_graph(graph):
     print(f"directed: {graph.is_directed()}")
+    print(f"is dag: {is_dag(graph)}")
     print(f"has self-loops: {has_self_loops(graph)}")
     print(f"is multigraph: {is_multigraph(graph)}")
     print(f"num verts: {graph.num_verts()}")
@@ -340,3 +346,67 @@ def classify_and_print_edges(graph):
         classify_and_print_digraph_edges()
     else:
         classify_and_print_undirected_graph_edges()
+
+
+def is_dag(graph):
+    if not graph.is_directed():
+        return False
+
+    pre = {v: False for v in graph.get_verts()}
+    post = {v: False for v in graph.get_verts()}
+    edges_to_remove = []
+    dag = True
+
+    def directed_dfs(v):
+        nonlocal dag
+
+        pre[v] = True
+
+        for t in graph.get_adjacent(v):
+            if not pre[t]:
+                directed_dfs(t)
+            elif t == v:
+                dag = False  # self-loop
+                break
+            elif not post[t]:
+                dag = False  # back edge
+                break
+
+        post[v] = True
+
+    for v in graph.get_verts():
+
+        if dag and not pre[v]:
+            directed_dfs(v)
+
+    return dag
+
+
+def convert_to_dag(graph):
+
+    graph.set_is_directed()
+
+    pre = {v: False for v in graph.get_verts()}
+    post = {v: False for v in graph.get_verts()}
+    edges_to_remove = []
+
+    def directed_dfs(v):
+
+        pre[v] = True
+
+        for t in graph.get_adjacent(v):
+            if not pre[t]:
+                directed_dfs(t)
+            elif t == v:
+                edges_to_remove.append((v, t))  # self-loop
+            elif not post[t]:
+                edges_to_remove.append((v, t))  # back edge
+
+        post[v] = True
+
+    for v in graph.get_verts():
+        if not pre[v]:
+            directed_dfs(v)
+
+    for edge in edges_to_remove:
+        graph.remove_edge(edge)
