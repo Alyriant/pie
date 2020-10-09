@@ -277,29 +277,29 @@ def classify_and_print_edges(graph):
 
     def classify_and_print_undirected_graph_edges():
 
-        def undirected_dfs(v, parent):
+        def undirected_dfs(u, parent):
             nonlocal pre_count
             nonlocal depth
 
-            pre[v] = pre_count
+            pre[u] = pre_count
             pre_count += 1
             if parent == -1:
-                print(f"{v} : root")
+                print(f"{u} : root")
             else:
-                print(f"{' ' * depth}{parent}-{v} : tree")
+                print(f"{' ' * depth}{parent}-{u} : tree")
             depth += 1
 
-            for t in sorted(graph.get_adjacent(v)):
+            for t in sorted(graph.get_adjacent(u)):
                 if pre[t] == -1:
-                    undirected_dfs(t, parent=v)
-                elif v == t:
-                    print(f"{' ' * depth}{v}-{t} : self-loop")
+                    undirected_dfs(t, parent=u)
+                elif u == t:
+                    print(f"{' ' * depth}{u}-{t} : self-loop")
                 elif t == parent:
-                    print(f"{' ' * depth}{v}-{t} : parent")
-                elif pre[t] < pre[v]:
-                    print(f"{' ' * depth}{v}-{t} : back")
+                    print(f"{' ' * depth}{u}-{t} : parent")
+                elif pre[t] < pre[u]:
+                    print(f"{' ' * depth}{u}-{t} : back")
                 else:
-                    print(f"{' ' * depth}{v}-{t} : down")
+                    print(f"{' ' * depth}{u}-{t} : down")
 
             depth -= 1
 
@@ -354,7 +354,6 @@ def is_dag(graph):
 
     pre = {v: False for v in graph.get_verts()}
     post = {v: False for v in graph.get_verts()}
-    edges_to_remove = []
     dag = True
 
     def directed_dfs(v):
