@@ -12,6 +12,8 @@ class TestDynamicGraph(TestCase):
         self.assertEqual(10, graph.num_edges())
         self.assertEqual(10, len(graph.get_edges()))
 
+
+class TestFunctions(TestCase):
     def test_create_random_dense_graph(self):
         graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=False, multigraph=False,
                                           self_loops=False)
