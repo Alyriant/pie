@@ -39,17 +39,37 @@ class DynamicGraph:
 
     def get_edges(self):
         edges = []
-        for v, ws in self._verts:
-            for w in ws:
-                if self.is_directed() or v <= w:
+        if self.is_directed():
+            for v in self._verts:
+                for w in self.get_adjacent(v):
                     edges.append((v, w))
+        else:
+            # complicated to handle self-loops
+            double = []
+            for v in self._verts:
+                for w in self.get_adjacent(v):
+                    if v < w:
+                        a = v
+                        b = w
+                    else:
+                        a = w
+                        b = v
+                    double.append((a, b))
+            double.sort()
+            skip = False
+            for edge in double:
+                if skip:
+                    skip = False
+                else:
+                    edges.append(edge)
+                    skip = True
         return edges
 
     def insert_edge(self, edge):
         self._assure_vert(edge[0])
         self._assure_vert(edge[1])
         self._verts[edge[0]].append(edge[1])
-        if not self.is_directed() and edge[0] != edge[1]:
+        if not self.is_directed():
             self._verts[edge[1]].append(edge[0])
         self._num_edges += 1
 
@@ -409,3 +429,13 @@ def convert_to_dag(graph):
 
     for edge in edges_to_remove:
         graph.remove_edge(edge)
+
+
+def create_reversed_graph(graph):
+    if not graph.is_directed():
+        return None
+
+    rev = DynamicGraph(directed=True)
+    for edge in graph.get_edges():
+        rev.insert_edge((edge[1], edge[0]))
+    return rev

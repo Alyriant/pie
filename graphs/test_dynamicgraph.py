@@ -2,7 +2,16 @@ from unittest import TestCase
 from graphs.dynamicgraph import *
 
 
-class Test(TestCase):
+class TestDynamicGraph(TestCase):
+    def test_get_edges(self):
+        graph = DynamicGraph(directed=False)
+        graph.add_edges_from_array([[0, 1], [1, 2], [2, 1], [3, 3], [3, 3]])
+        self.assertEqual(5, graph.num_edges())
+        self.assertEqual(5, len(graph.get_edges()))
+        graph.set_is_directed()
+        self.assertEqual(10, graph.num_edges())
+        self.assertEqual(10, len(graph.get_edges()))
+
     def test_create_random_dense_graph(self):
         graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=False, multigraph=False,
                                           self_loops=False)
@@ -271,3 +280,11 @@ class Test(TestCase):
         self.assertFalse(is_dag(graph))
         convert_to_dag(graph)
         self.assertTrue(is_dag(graph))
+
+    def test_create_reversed_graph(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [1, 2]])
+        graph2 = create_reversed_graph(graph)
+        self.assertTrue(graph2.has_edge((1, 0)))
+        self.assertTrue(graph2.has_edge((2, 1)))
+
