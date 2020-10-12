@@ -253,7 +253,7 @@ class TestFunctions(TestCase):
 
     def test_classify_and_print_edges_directed(self):
         graph = DynamicGraph(directed=True)
-        graph.add_edges_from_array([[0, 1], [0, 2], [1, 1], [1, 2], [2, 0], [3, 2]])
+        graph.add_edges_from_array([[0, 1], [0, 2], [0, 2], [1, 1], [1, 2], [2, 0], [3, 2]])
         classify_and_print_edges(graph)
 
     def test_is_dag(self):
@@ -290,3 +290,18 @@ class TestFunctions(TestCase):
         self.assertTrue(graph2.has_edge((1, 0)))
         self.assertTrue(graph2.has_edge((2, 1)))
 
+    def test_topological_sort_dag(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [0, 2], [1, 2], [3, 2]])
+        t = topological_sort_dag(graph)
+        print(t)
+        self.assertTrue(t.index(3) < t.index(2))
+        self.assertTrue(t.index(1) < t.index(2))
+        self.assertTrue(t.index(0) < t.index(2))
+        self.assertTrue(t.index(0) < t.index(1))
+
+    def test_topological_sort_not_dag(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [0, 2], [2, 0], [1, 2], [3, 2]])
+        t = topological_sort_dag(graph)
+        self.assertEqual(None, t)

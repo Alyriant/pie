@@ -439,3 +439,35 @@ def create_reversed_graph(graph):
     for edge in graph.get_edges():
         rev.insert_edge((edge[1], edge[0]))
     return rev
+
+
+def topological_sort_dag(graph):
+    if not graph.is_directed():
+        return None
+
+    pre = {v: False for v in graph.get_verts()}
+    post = {v: False for v in graph.get_verts()}
+    reverse_topo = []
+    is_dag = True
+
+    def dfs(v):
+        nonlocal is_dag
+
+        pre[v] = True
+        for t in graph.get_adjacent(v):
+            if not pre[t]:
+                dfs(t)
+            elif not post[t] or v == t:
+                is_dag = False
+                break
+        post[v] = True
+        reverse_topo.append(v)
+
+    for v in graph.get_verts():
+        if not pre[v]:
+            dfs(v)
+
+    if not is_dag:
+        return None
+
+    return reverse_topo[::-1]
