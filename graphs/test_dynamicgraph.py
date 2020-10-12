@@ -294,7 +294,6 @@ class TestFunctions(TestCase):
         graph = DynamicGraph(directed=True)
         graph.add_edges_from_array([[0, 1], [0, 2], [1, 2], [3, 2]])
         t = topological_sort_dag(graph)
-        print(t)
         self.assertTrue(t.index(3) < t.index(2))
         self.assertTrue(t.index(1) < t.index(2))
         self.assertTrue(t.index(0) < t.index(2))
