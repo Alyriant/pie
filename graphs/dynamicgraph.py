@@ -506,5 +506,12 @@ def strong_components_kosaraju(graph):
             dfs(v, graph)
             component_count += 1
 
-    return component_count + 1, component_id
+    components = [[] for _ in range(component_count+1)]
+    for v, i in component_id.items():
+        components[i].append(v)
+    for component in components:
+        component.sort()
+    components.sort()
+
+    return component_count + 1, component_id, components
 
