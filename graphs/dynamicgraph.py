@@ -1,4 +1,5 @@
 from collections import deque
+from copy import copy
 import random
 
 
@@ -221,7 +222,6 @@ def path_from_bfs(graph, a, b):
     parent = {v: -1 for v in graph.get_verts()}
     unprocessed = deque()
     is_cycle = (a == b)
-    path = None
 
     def search(edge):
         parent[edge[1]] = edge[0]
@@ -448,17 +448,17 @@ def topological_sort_dag(graph):
     pre = {v: False for v in graph.get_verts()}
     post = {v: False for v in graph.get_verts()}
     reverse_topo = []
-    is_dag = True
+    is_a_dag = True
 
     def dfs(v):
-        nonlocal is_dag
+        nonlocal is_a_dag
 
         pre[v] = True
         for t in graph.get_adjacent(v):
             if not pre[t]:
                 dfs(t)
             elif not post[t] or v == t:
-                is_dag = False
+                is_a_dag = False
                 break
         post[v] = True
         reverse_topo.append(v)
@@ -467,7 +467,44 @@ def topological_sort_dag(graph):
         if not pre[v]:
             dfs(v)
 
-    if not is_dag:
+    if not is_a_dag:
         return None
 
     return reverse_topo[::-1]
+
+
+def strong_components_kosaraju(graph):
+    if not graph.is_directed:
+        return None
+
+    rev = create_reversed_graph(graph)
+    component_id = {v: -1 for v in rev.get_verts()}
+    component_count = 0
+    post_id = {v: -1 for v in rev.get_verts()}
+    post_count = 0
+
+    def dfs(w, dfs_graph):
+        nonlocal post_count
+
+        component_id[w] = component_count
+        for t in dfs_graph.get_adjacent(w):
+            if component_id[t] == -1:
+                dfs(t, dfs_graph)
+        post_id[post_count] = w
+        post_count += 1
+
+    for v in rev.get_verts():
+        dfs(v, rev)
+    rev_post_id = copy(post_id)
+
+    component_id = {v: -1 for v in rev.get_verts()}
+    component_count = 0
+    post_count = 0
+    for n in range(graph.num_verts()-1, -1, -1):
+        v = rev_post_id[n]
+        if component_id[v] == -1:
+            dfs(v, graph)
+            component_count += 1
+
+    return component_count + 1, component_id
+

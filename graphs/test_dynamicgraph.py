@@ -304,3 +304,13 @@ class TestFunctions(TestCase):
         graph.add_edges_from_array([[0, 1], [0, 2], [2, 0], [1, 2], [3, 2]])
         t = topological_sort_dag(graph)
         self.assertEqual(None, t)
+
+    def test_strong_components_kosaraju(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1], [1, 2], [1, 2], [2, 0], [2, 3], [3, 4], [4, 3], [5, 3]])
+        component_count, ids = strong_components_kosaraju(graph)
+        self.assertEqual(3, component_count)
+        self.assertTrue(ids[0] == ids[1] and ids[0] == ids[2])
+        self.assertTrue(ids[3] == ids[4])
+        self.assertFalse(ids[2] == ids[3])
+        self.assertFalse(ids[3] == ids[5])
