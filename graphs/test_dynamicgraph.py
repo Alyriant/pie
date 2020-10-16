@@ -1,5 +1,7 @@
 from unittest import TestCase
 from graphs.dynamicgraph import *
+from graphs.densegraph import DenseGraph
+from parameterized import parameterized, parameterized_class
 
 
 class TestDynamicGraph(TestCase):
@@ -12,110 +14,72 @@ class TestDynamicGraph(TestCase):
         self.assertEqual(10, graph.num_edges())
         self.assertEqual(10, len(graph.get_edges()))
 
+    @parameterized.expand([
+        ("FFF", DynamicGraph, 10, 25, False, False, False),
+        ("FFT", DynamicGraph, 10, 25, False, False, True),
+        ("FTF", DynamicGraph, 10, 25, False, True, False),
+        ("FTT", DynamicGraph, 10, 25, False, True, True),
+        ("TFF", DynamicGraph, 10, 25, True, False, False),
+        ("TFT", DynamicGraph, 10, 25, True, False, True),
+        ("TTF", DynamicGraph, 10, 25, True, True, False),
+        ("TTT", DynamicGraph, 10, 25, True, True, True),
+    ])
+    def test_create_random_dense_graph_dynamicgraph(self, name, graph_class, num_verts, num_edges, directed, multigraph, self_loops):
+        graph = create_random_dense_graph(graph_class, num_verts, num_edges, directed, multigraph, self_loops)
+        self.assertEqual(num_verts, graph.num_verts())
+        self.assertEqual(num_edges, graph.num_edges())
+        self.assertEqual(directed, graph.is_directed())
+        self.assertEqual(multigraph, is_multigraph(graph))
+        self.assertEqual(self_loops, graph.has_self_loops())
 
-class TestFunctions(TestCase):
-    def test_create_random_dense_graph(self):
-        graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=False, multigraph=False,
-                                          self_loops=False)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertFalse(graph.is_directed())
-        self.assertFalse(is_multigraph(graph))
-        self.assertFalse(has_self_loops(graph))
+    @parameterized.expand([
+        ("FFF", DenseGraph, 10, 25, False, False, False),
+        ("FFT", DenseGraph, 10, 25, False, False, True),
+        ("TFF", DenseGraph, 10, 25, True, False, False),
+        ("TFT", DenseGraph, 10, 25, True, False, True),
+    ])
+    def test_create_random_dense_graph_densegraph(self, name, graph_class, num_verts, num_edges, directed, multigraph, self_loops):
+        graph = create_random_dense_graph(graph_class, num_verts, num_edges, directed, multigraph, self_loops)
+        self.assertEqual(num_verts, graph.num_verts())
+        self.assertEqual(num_edges, graph.num_edges())
+        self.assertEqual(directed, graph.is_directed())
+        self.assertEqual(self_loops, graph.has_self_loops())
 
-    def test_create_random_dense_graph_2(self):
-        graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=False, multigraph=True, self_loops=True)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertFalse(graph.is_directed())
-        self.assertTrue(is_multigraph(graph))
-        self.assertTrue(has_self_loops(graph))
+    @parameterized.expand([
+        ("FFF", 3, 10, 10, False, False, False),
+        ("FFT", 3, 10, 10, False, False, True),
+        ("FTF", 3, 10, 10, False, True, False),
+        ("FTT", 3, 10, 10, False, True, True),
+        ("TFF", 3, 10, 10, True, False, False),
+        ("TFT", 3, 10, 10, True, False, True),
+        ("TTF", 3, 10, 10, True, True, False),
+        ("TTT", 3, 10, 10, True, True, True),
+    ])
+    def test_create_random_k_neighbor_graph(self, name, k, num_verts, num_edges, directed, multigraph, self_loops):
+        graph = create_random_k_neighbor_graph(k, num_verts, num_edges, directed, multigraph, self_loops)
+        self.assertEqual(num_verts, graph.num_verts())
+        self.assertEqual(num_edges, graph.num_edges())
+        self.assertEqual(directed, graph.is_directed())
+        self.assertEqual(multigraph, is_multigraph(graph))
+        self.assertEqual(self_loops, graph.has_self_loops())
 
-    def test_create_random_dense_graph_directed(self):
-        graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=True, multigraph=False, self_loops=False)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertTrue(graph.is_directed())
-        self.assertFalse(is_multigraph(graph))
-        self.assertFalse(has_self_loops(graph))
-
-    def test_create_random_dense_graph_directed_2(self):
-        graph = create_random_dense_graph(num_verts=10, num_edges=25, directed=True, multigraph=True, self_loops=True)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertTrue(graph.is_directed())
-        self.assertTrue(is_multigraph(graph))
-        self.assertTrue(has_self_loops(graph))
-
-    def test_create_random_k_neighbor_graph(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=False, multigraph=False,
-                                               self_loops=False)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 10)
-        self.assertFalse(graph.is_directed())
-        self.assertFalse(is_multigraph(graph))
-        self.assertFalse(has_self_loops(graph))
-
-    def test_create_random_k_neighbor_graph_2(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=False, multigraph=True,
-                                               self_loops=True)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 10)
-        self.assertFalse(graph.is_directed())
-        self.assertTrue(is_multigraph(graph))
-        self.assertTrue(has_self_loops(graph))
-
-    def test_create_random_k_neighbor_graph_directed(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=True, multigraph=False,
-                                               self_loops=False)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 10)
-        self.assertTrue(graph.is_directed())
-        self.assertFalse(is_multigraph(graph))
-        self.assertFalse(has_self_loops(graph))
-
-    def test_create_random_k_neighbor_graph_directed_2(self):
-        graph = create_random_k_neighbor_graph(k=3, num_verts=10, num_edges=10, directed=True, multigraph=True,
-                                               self_loops=True)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 10)
-        self.assertTrue(graph.is_directed())
-        self.assertTrue(is_multigraph(graph))
-        self.assertTrue(has_self_loops(graph))
-
-    def test_create_random_sparse_graph(self):
-        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=False, multigraph=False,
-                                           self_loops=False)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertFalse(graph.is_directed())
-        self.assertFalse(is_multigraph(graph))
-        self.assertFalse(has_self_loops(graph))
-
-    def test_create_random_sparse_graph_2(self):
-        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=False, multigraph=True, self_loops=True)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertFalse(graph.is_directed())
-        self.assertTrue(is_multigraph(graph))
-        self.assertTrue(has_self_loops(graph))
-
-    def test_create_random_sparse_graph_directed(self):
-        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=True, multigraph=False,
-                                           self_loops=False)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertTrue(graph.is_directed())
-        self.assertFalse(is_multigraph(graph))
-        self.assertFalse(has_self_loops(graph))
-
-    def test_create_random_sparse_graph_directed_2(self):
-        graph = create_random_sparse_graph(num_verts=10, num_edges=25, directed=True, multigraph=True, self_loops=True)
-        self.assertEqual(graph.num_verts(), 10)
-        self.assertEqual(graph.num_edges(), 25)
-        self.assertTrue(graph.is_directed())
-        self.assertTrue(is_multigraph(graph))
-        self.assertTrue(has_self_loops(graph))
+    @parameterized.expand([
+        ("FFF", 10, 25, False, False, False),
+        ("FFT", 10, 25, False, False, True),
+        ("FTF", 10, 25, False, True, False),
+        ("FTT", 10, 25, False, True, True),
+        ("TFF", 10, 25, True, False, False),
+        ("TFT", 10, 25, True, False, True),
+        ("TTF", 10, 25, True, True, False),
+        ("TTT", 10, 25, True, True, True),
+    ])
+    def test_create_random_sparse_graph(self, name, num_verts, num_edges, directed, multigraph,self_loops):
+        graph = create_random_sparse_graph(num_verts, num_edges, directed, multigraph,self_loops)
+        self.assertEqual(num_verts, graph.num_verts())
+        self.assertEqual(num_edges, graph.num_edges())
+        self.assertEqual(directed, graph.is_directed())
+        self.assertEqual(multigraph, is_multigraph(graph))
+        self.assertEqual(self_loops, graph.has_self_loops())
 
     def test_path_from_dfs(self):
         graph = DynamicGraph(directed=False)
@@ -200,20 +164,20 @@ class TestFunctions(TestCase):
     def test_has_self_loops(self):
         graph = DynamicGraph(directed=False)
         graph.add_edges_from_array([[0, 1], [2, 2], [2, 3]])
-        self.assertTrue(has_self_loops(graph))
+        self.assertTrue(graph.has_self_loops())
 
         graph = DynamicGraph(directed=False)
         graph.add_edges_from_array([[0, 1], [1, 2], [2, 3]])
-        self.assertFalse(has_self_loops(graph))
+        self.assertFalse(graph.has_self_loops())
 
     def test_has_self_loops_directed(self):
         graph = DynamicGraph(directed=True)
         graph.add_edges_from_array([[0, 1], [2, 2], [2, 3]])
-        self.assertTrue(has_self_loops(graph))
+        self.assertTrue(graph.has_self_loops())
 
         graph = DynamicGraph(directed=True)
         graph.add_edges_from_array([[0, 1], [1, 2], [2, 3]])
-        self.assertFalse(has_self_loops(graph))
+        self.assertFalse(graph.has_self_loops())
 
     def test_is_multigraph(self):
         graph = DynamicGraph(directed=False)

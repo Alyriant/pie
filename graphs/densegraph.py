@@ -1,16 +1,16 @@
 from collections import deque
 from copy import copy
 import random
-from graphs.densegraph import DenseGraph
 
 
-class DynamicGraph:
-    """ An adjacency list multigraph with named verts which can add verts. """
+class DenseGraph:
+    """ A fixed-size adjacency matrix non-multigraph with indexed verts """
 
-    def __init__(self, directed):
+    def __init__(self, num_verts, directed):
         self._directed = directed
-        self._verts = {}
+        self._verts = [[False for j in range(num_verts)] for i in range(num_verts)]
         self._num_edges = 0
+        self._num_verts = num_verts
 
     def is_directed(self):
         return self._directed
@@ -19,90 +19,63 @@ class DynamicGraph:
         if not self._directed:
             self._directed = True
             self._num_edges *= 2
-            to_add = []
-            for v in self._verts:
-                for w in self.get_adjacent(v):
-                    if v == w:
-                        to_add.append(v)
-            for vert in to_add:
-                self._verts[vert].append(vert)
 
     def num_verts(self):
-        return len(self._verts)
-
-    def _assure_vert(self, v):
-        if v not in self._verts:
-            self._verts[v] = []
-
-    def add_vert(self, v):
-        self._assure_vert(v)
+        return self._num_verts
 
     def get_verts(self):
-        return self._verts.keys()
+        return [i for i in range(self._num_verts)]
 
     def num_edges(self):
         return self._num_edges
 
     def has_edge(self, e):
-        return e[1] in self.get_adjacent(e[0])
+        return self._verts[e[0]][e[1]]
 
     def get_edges(self):
         edges = []
-        for v in self._verts:
-            for w in self.get_adjacent(v):
-                if self.is_directed() or v <= w:
-                    edges.append((v, w))
+        for v in range(self._num_verts):
+            for w in range(self._num_verts):
+                if self._verts[v][w]:
+                    if self.is_directed() or v <= w:
+                        edges.append((v, w))
         return edges
 
     def insert_edge(self, edge):
-        self._assure_vert(edge[0])
-        self._assure_vert(edge[1])
-        self._verts[edge[0]].append(edge[1])
-        if not self.is_directed() and edge[0] != edge[1]:
-            self._verts[edge[1]].append(edge[0])
-        self._num_edges += 1
+        if not self._verts[edge[0]][edge[1]]:
+            self._verts[edge[0]][edge[1]] = True
+            if not self.is_directed():
+                self._verts[edge[1]][edge[0]] = True
+            self._num_edges += 1
 
     def add_edges_from_array(self, arr):
         for edge in arr:
             self.insert_edge(edge)
 
     def remove_edge(self, edge):
-        self._verts[edge[0]].remove(edge[1])
-        if not self.is_directed() and edge[0] != edge[1]:
-            self._verts[edge[1]].remove(edge[0])
-        self._num_edges -= 1
+        if self._verts[edge[0]][edge[1]]:
+            self._verts[edge[0]][edge[1]] = False
+            if not self.is_directed():
+                self._verts[edge[1]][edge[0]] = False
+            self._num_edges -= 1
 
     def get_adjacent(self, v):
-        return self._verts[v]
+        return [i for i in range(self._num_verts) if self._verts[v][i]]
 
     def has_self_loops(self):
-        for v in self.get_verts():
-            if v in self.get_adjacent(v):
+        for i in range(self._num_verts):
+            if self._verts[i][i]:
                 return True
         return False
 
 
-def create_random_dense_graph(graph_class, num_verts, num_edges, directed, multigraph, self_loops):
-    if graph_class is DenseGraph:
-        graph = graph_class(num_verts, directed)
-    elif graph_class is DynamicGraph:
-        graph = graph_class(directed)
-        for v in range(num_verts):
-            graph.add_vert(v)
-    else:
-        return None
+def create_random_dense_graph(num_verts, num_edges, directed, multigraph, self_loops):
+    graph = DenseGraph(num_verts, directed)
 
     # ensure at least one
     if self_loops:
         v = random.randint(0, num_verts - 1)
         graph.insert_edge((v, v))
-    if multigraph:
-        v = w = 0
-        while v == w:
-            v = random.randint(0, num_verts - 1)
-            w = random.randint(0, num_verts - 1)
-        graph.insert_edge((v, w))
-        graph.insert_edge((v, w))
 
     probability = num_edges / (num_verts * (num_verts - 1))
     if not directed:
@@ -116,75 +89,13 @@ def create_random_dense_graph(graph_class, num_verts, num_edges, directed, multi
             for w in range(next_range):
                 if random.random() < probability and (self_loops or w != v):
                     if directed and random.randint(0, 1) == 1:
-                        if multigraph or not graph.has_edge((v, w)):
-                            graph.insert_edge((v, w))
+                        graph.insert_edge((v, w))
                     else:
-                        if multigraph or not graph.has_edge((w, v)):
-                            graph.insert_edge((w, v))
+                        graph.insert_edge((w, v))
                 if graph.num_edges() == num_edges:
                     break
             if graph.num_edges() == num_edges:
                 break
-    return graph
-
-
-def create_random_k_neighbor_graph(k, num_verts, num_edges, directed, multigraph, self_loops):
-    graph = DynamicGraph(directed)
-    for v in range(num_verts):
-        graph.add_vert(v)
-
-    # ensure at least one
-    if self_loops:
-        v = random.randint(0, num_verts - 1)
-        graph.insert_edge((v, v))
-    if multigraph:
-        v = random.randint(0, num_verts - 1)
-        w = (v + k) % num_verts
-        graph.insert_edge((v, w))
-        graph.insert_edge((v, w))
-
-    probability = num_edges / (num_verts * (2 * k))
-    if not directed:
-        probability *= 2
-    while graph.num_edges() < num_edges:
-        for v in range(num_verts):
-            for x in range(v - k, v + k + 1):
-                w = (x + num_verts) % num_verts
-                p = random.random()
-                if p < probability and (self_loops or w != v):
-                    if directed and random.randint(0, 1) == 1:
-                        if multigraph or not graph.has_edge((v, w)):
-                            graph.insert_edge((v, w))
-                    else:
-                        if multigraph or not graph.has_edge((w, v)):
-                            graph.insert_edge((w, v))
-                if graph.num_edges() == num_edges:
-                    break
-            if graph.num_edges() == num_edges:
-                break
-    return graph
-
-
-def create_random_sparse_graph(num_verts, num_edges, directed, multigraph, self_loops):
-    graph = DynamicGraph(directed)
-    for v in range(num_verts):
-        graph.add_vert(v)
-
-    # ensure at least one
-    if self_loops:
-        v = random.randint(0, num_verts - 1)
-        graph.insert_edge((v, v))
-    if multigraph:
-        v = random.randint(0, num_verts - 1)
-        w = random.randint(0, num_verts - 1)
-        graph.insert_edge((v, w))
-        graph.insert_edge((v, w))
-
-    while graph.num_edges() < num_edges:
-        v = random.randint(0, num_verts - 1)
-        w = random.randint(0, num_verts - 1)
-        if (self_loops or w != v) and (multigraph or not graph.has_edge((v, w))):
-            graph.insert_edge((v, w))
     return graph
 
 
@@ -262,6 +173,13 @@ def path_from_bfs(graph, a, b):
     return path_str
 
 
+def has_self_loops(graph):
+    for v in graph.get_verts():
+        if v in graph.get_adjacent(v):
+            return True
+    return False
+
+
 def is_multigraph(graph):
     for v in graph.get_verts():
         seen = set()
@@ -276,7 +194,7 @@ def is_multigraph(graph):
 def print_graph(graph):
     print(f"directed: {graph.is_directed()}")
     print(f"is dag: {is_dag(graph)}")
-    print(f"has self-loops: {graph.has_self_loops()}")
+    print(f"has self-loops: {has_self_loops(graph)}")
     print(f"is multigraph: {is_multigraph(graph)}")
     print(f"num verts: {graph.num_verts()}")
     print(f"num edges: {graph.num_edges()}")
