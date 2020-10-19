@@ -494,7 +494,8 @@ def strong_components_kosaraju(graph):
         post_count += 1
 
     for v in rev.get_verts():
-        dfs(v, rev)
+        if vert_to_component_map[v] == -1:
+            dfs(v, rev)
     rev_post_id = copy(post_id)
 
     vert_to_component_map = {v: -1 for v in rev.get_verts()}
@@ -506,14 +507,14 @@ def strong_components_kosaraju(graph):
             dfs(v, graph)
             component_count += 1
 
-    components = [[] for _ in range(component_count+1)]
+    components = [[] for _ in range(component_count)]
     for v, i in vert_to_component_map.items():
         components[i].append(v)
     for component in components:
         component.sort()
     components.sort()
 
-    return component_count + 1, vert_to_component_map, components
+    return component_count, vert_to_component_map, components
 
 
 def find_kernel_dag_for_digraph(graph):
