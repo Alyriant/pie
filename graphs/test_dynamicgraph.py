@@ -279,3 +279,24 @@ class TestDynamicGraph(TestCase):
         self.assertTrue(ids[3] == ids[4])
         self.assertFalse(ids[2] == ids[3])
         self.assertFalse(ids[3] == ids[5])
+
+    def test_strong_components_kosaraju2(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 0], [0, 1], [1, 2], [2, 0], [2, 3], [2, 3], [3, 4],
+                                    [4, 5], [5, 6], [6, 3], [6, 4]])
+        component_count, ids, components = strong_components_kosaraju(graph)
+        # print(components)
+        self.assertEqual(2, component_count)
+        self.assertTrue(ids[0] == ids[1] and ids[0] == ids[2])
+        self.assertTrue(ids[3] == ids[4] and ids[3] == ids[5] and ids[3] == ids[6])
+
+    def test_find_kernel_dag_for_digraph(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 0], [0, 1], [1, 2], [2, 0], [2, 3], [2, 3], [3, 4],
+                                    [4, 5], [5, 6], [6, 3], [6, 4]])
+        kernel_dag = find_kernel_dag_for_digraph(graph)
+        print_graph(kernel_dag)
+        self.assertEqual(1, kernel_dag.num_edges())
+        self.assertEqual(2, kernel_dag.num_verts())
+        edges = kernel_dag.get_edges()
+        self.assertEqual((0, 1), edges[0])

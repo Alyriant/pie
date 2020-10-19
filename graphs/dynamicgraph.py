@@ -468,11 +468,17 @@ def topological_sort_dag(graph):
 
 
 def strong_components_kosaraju(graph):
+    """
+    Given a digraph, computes the strongly-connected components. Returns:
+    component_count (num strong components)
+    vert_to_component_map
+    components (list of vertices belonging to each component)
+    """
     if not graph.is_directed:
-        return None
+        return None, None, None
 
     rev = create_reversed_graph(graph)
-    component_id = {v: -1 for v in rev.get_verts()}
+    vert_to_component_map = {v: -1 for v in rev.get_verts()}
     component_count = 0
     post_id = {v: -1 for v in rev.get_verts()}
     post_count = 0
@@ -480,9 +486,9 @@ def strong_components_kosaraju(graph):
     def dfs(w, dfs_graph):
         nonlocal post_count
 
-        component_id[w] = component_count
+        vert_to_component_map[w] = component_count
         for t in dfs_graph.get_adjacent(w):
-            if component_id[t] == -1:
+            if vert_to_component_map[t] == -1:
                 dfs(t, dfs_graph)
         post_id[post_count] = w
         post_count += 1
@@ -491,21 +497,35 @@ def strong_components_kosaraju(graph):
         dfs(v, rev)
     rev_post_id = copy(post_id)
 
-    component_id = {v: -1 for v in rev.get_verts()}
+    vert_to_component_map = {v: -1 for v in rev.get_verts()}
     component_count = 0
     post_count = 0
     for n in range(graph.num_verts()-1, -1, -1):
         v = rev_post_id[n]
-        if component_id[v] == -1:
+        if vert_to_component_map[v] == -1:
             dfs(v, graph)
             component_count += 1
 
     components = [[] for _ in range(component_count+1)]
-    for v, i in component_id.items():
+    for v, i in vert_to_component_map.items():
         components[i].append(v)
     for component in components:
         component.sort()
     components.sort()
 
-    return component_count + 1, component_id, components
+    return component_count + 1, vert_to_component_map, components
 
+
+def find_kernel_dag_for_digraph(graph):
+    num_components, vert_to_component_map, strong_components = \
+        strong_components_kosaraju(graph)
+    if not num_components:
+        return None
+
+    kernel_dag = DenseGraph(num_components, directed=True)
+    for edge in graph.get_edges():
+        v = vert_to_component_map[edge[0]]
+        w = vert_to_component_map[edge[1]]
+        if v != w:
+            kernel_dag.insert_edge((v, w))
+    return kernel_dag
