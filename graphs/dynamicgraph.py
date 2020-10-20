@@ -1,5 +1,5 @@
 from collections import deque
-from copy import copy
+from copy import copy, deepcopy
 import random
 from graphs.densegraph import DenseGraph
 
@@ -80,6 +80,37 @@ class DynamicGraph:
             if v in self.get_adjacent(v):
                 return True
         return False
+
+
+class DigraphTransitiveClosure:
+    """
+    Uses Warshall's algorithm to generate an adjacency matrix graph for the kernel dag
+    of a digraph to answer reachability queries.
+    """
+    def __init__(self, graph):
+        self.digraph = graph
+        self.kernel_dag, self.vert_to_component_map = find_kernel_dag_for_digraph(self.digraph)
+        self.kernel_dag_closure = self._compute_transitive_closure()
+
+    def _compute_transitive_closure(self):
+        graph = deepcopy(self.kernel_dag)
+        for v in range(graph.num_verts()):
+            graph.insert_edge((v, v))
+        for i in range(graph.num_verts()):
+            for s in range(graph.num_verts()):
+                if graph.has_edge((s, i)):
+                    for t in range(graph.num_verts()):
+                        if graph.has_edge((i, t)):
+                            graph.insert_edge((s, t))
+        return graph
+
+    def reachable(self, v, w):
+        cv = self.vert_to_component_map[v]
+        cw = self.vert_to_component_map[w]
+        if cv == cw:
+            return True
+        else:
+            return self.kernel_dag_closure.has_edge((cv, cw))
 
 
 def create_random_dense_graph(graph_class, num_verts, num_edges, directed, multigraph, self_loops):
@@ -521,7 +552,7 @@ def find_kernel_dag_for_digraph(graph):
     num_components, vert_to_component_map, strong_components = \
         strong_components_kosaraju(graph)
     if not num_components:
-        return None
+        return None, None
 
     kernel_dag = DenseGraph(num_components, directed=True)
     for edge in graph.get_edges():
@@ -529,4 +560,4 @@ def find_kernel_dag_for_digraph(graph):
         w = vert_to_component_map[edge[1]]
         if v != w:
             kernel_dag.insert_edge((v, w))
-    return kernel_dag
+    return kernel_dag, vert_to_component_map

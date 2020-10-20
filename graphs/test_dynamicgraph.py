@@ -296,9 +296,23 @@ class TestDynamicGraph(TestCase):
         graph = DynamicGraph(directed=True)
         graph.add_edges_from_array([[0, 0], [0, 1], [1, 2], [2, 0], [2, 3], [2, 3], [3, 4],
                                     [4, 5], [5, 6], [6, 3], [6, 4]])
-        kernel_dag = find_kernel_dag_for_digraph(graph)
+        kernel_dag, vert_to_component_map = find_kernel_dag_for_digraph(graph)
         print_graph(kernel_dag)
         self.assertEqual(1, kernel_dag.num_edges())
         self.assertEqual(2, kernel_dag.num_verts())
         edges = kernel_dag.get_edges()
         self.assertTrue(edges[0] in ((0, 1), (1, 0)))
+
+    def test_digraph_transitive_closure(self):
+        graph = DynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 0], [0, 1], [1, 2], [2, 0], [2, 3], [2, 3], [3, 4],
+                                    [4, 5], [5, 6], [6, 3], [6, 4]])
+        tc = DigraphTransitiveClosure(graph)
+        for v in range(3):
+            for w in range(7):
+                self.assertTrue(tc.reachable(v, w))
+        for v in range(3, 7):
+            for w in range(3, 7):
+                self.assertTrue(tc.reachable(v, w))
+            for w in range(0, 3):
+                self.assertFalse(tc.reachable(v, w))
