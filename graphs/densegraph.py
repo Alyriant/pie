@@ -62,6 +62,9 @@ class DenseGraph:
     def get_adjacent(self, v):
         return [i for i in range(self._num_verts) if self._verts[v][i]]
 
+    def get_adjacent_verts(self, v):
+        return self.get_adjacent(v)
+
     def has_self_loops(self):
         for i in range(self._num_verts):
             if self._verts[i][i]:
