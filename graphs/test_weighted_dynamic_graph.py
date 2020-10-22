@@ -283,7 +283,7 @@ class TestWeightedWeightedDynamicGraph(TestCase):
         graph.add_edges_from_array_default_weight([[0, 0], [0, 1], [1, 2], [2, 0], [2, 3], [2, 3], [3, 4],
                                     [4, 5], [5, 6], [6, 3], [6, 4]])
         kernel_dag, vert_to_component_map = find_kernel_dag_for_digraph(graph)
-        #print_graph(kernel_dag)
+        # print_graph(kernel_dag)
         self.assertEqual(1, kernel_dag.num_edges())
         self.assertEqual(2, kernel_dag.num_verts())
         edges = kernel_dag.get_edges()
@@ -303,3 +303,11 @@ class TestWeightedWeightedDynamicGraph(TestCase):
             for w in range(0, 3):
                 self.assertFalse(tc.reachable(v, w))
 
+    def test_prims_algorithm_for_mst(self):
+        graph = WeightedDynamicGraph(directed=False)
+        graph.add_edges_from_array([[0, 1, 4], [0, 2, 5], [0, 3, 3], [1, 2, 1], [1, 3, 6], [2, 3, 2]])
+        total_weight, mst_edges = prims_algorithm_for_minimal_spanning_tree(graph)
+        self.assertEqual(6, total_weight)
+        self.assertEqual(3, len(mst_edges))
+        for e in (Edge(1, 2, 1), Edge(2, 3, 2), Edge(0, 3, 3)):
+            self.assertTrue(e in mst_edges)

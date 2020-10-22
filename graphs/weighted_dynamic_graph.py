@@ -1,12 +1,13 @@
 import functools
 from collections import deque
 from copy import copy, deepcopy
-from typing import TypeVar, Dict, List, Iterable, Union
+from typing import TypeVar, Dict, List, Iterable, Union, Optional
 import random
 from graphs.densegraph import DenseGraph
 
 VertName = TypeVar('VertName', int, str)
 Weight = TypeVar('Weight', int, float)
+
 
 @functools.total_ordering
 class Edge:
@@ -26,7 +27,7 @@ class Edge:
         return self.v == other.v and self.w == other.w and self.weight == other.weight
 
     @classmethod
-    def from_edge(cls, e: "Edge"):
+    def from_edge(cls, e: 'Edge'):
         return cls(e.v, e.w, e.weight)
 
 
@@ -84,6 +85,14 @@ class WeightedDynamicGraph:
             if edge.w == w:
                 return True
         return False
+
+    def get_edge(self, v: VertName, w: VertName) -> Union[Edge, None]:
+        for edge in self.get_adjacent(v):
+            if edge.w == w:
+                if not self.is_directed():
+                    edge = Edge(min(v, w), max(v, w), edge.weight)
+                return edge
+        return None
 
     def get_edges(self) -> List[Edge]:
         edges = []
@@ -188,7 +197,6 @@ def create_random_graph_helper(graph: WeightedDynamicGraph, multigraph: bool,
 def create_random_dense_graph(num_verts: int, num_edges: int,
                               directed: bool, multigraph: bool, self_loops: bool
                               ) -> WeightedDynamicGraph:
-
     graph = WeightedDynamicGraph(directed)
     for v in range(num_verts):
         graph.add_vert(v)
@@ -223,7 +231,6 @@ def create_random_dense_graph(num_verts: int, num_edges: int,
 def create_random_k_neighbor_graph(k: int, num_verts: int, num_edges: int,
                                    directed: bool, multigraph: bool, self_loops: bool
                                    ) -> WeightedDynamicGraph:
-
     graph = WeightedDynamicGraph(directed)
     for v in range(num_verts):
         graph.add_vert(v)
@@ -266,7 +273,6 @@ def create_random_k_neighbor_graph(k: int, num_verts: int, num_edges: int,
 def create_random_sparse_graph(num_verts: int, num_edges: int,
                                directed: bool, multigraph: bool, self_loops: bool
                                ) -> WeightedDynamicGraph:
-
     graph = WeightedDynamicGraph(directed)
     for v in range(num_verts):
         graph.add_vert(v)
@@ -494,7 +500,6 @@ def is_dag(graph: WeightedDynamicGraph) -> bool:
 
 
 def convert_to_dag(graph: WeightedDynamicGraph):
-
     graph.set_is_directed()
 
     pre = {v: False for v in graph.get_verts()}
@@ -534,7 +539,7 @@ def create_reversed_graph(graph: WeightedDynamicGraph) -> Union[WeightedDynamicG
     return rev
 
 
-def topological_sort_dag(graph: WeightedDynamicGraph) -> List[VertName]:
+def topological_sort_dag(graph: WeightedDynamicGraph) -> Union[List[VertName], None]:
     if not graph.is_directed():
         return None
 
@@ -600,7 +605,7 @@ def strong_components_kosaraju(graph: WeightedDynamicGraph):
     vert_to_component_map = {v: -1 for v in rev.get_verts()}
     component_count = 0
     post_count = 0
-    for n in range(graph.num_verts()-1, -1, -1):
+    for n in range(graph.num_verts() - 1, -1, -1):
         v = rev_post_id[n]
         if vert_to_component_map[v] == -1:
             dfs(v, graph)
@@ -629,3 +634,37 @@ def find_kernel_dag_for_digraph(graph: WeightedDynamicGraph):
         if v != w:
             kernel_dag.insert_edge((v, w))
     return kernel_dag, vert_to_component_map
+
+
+def prims_algorithm_for_minimal_spanning_tree(graph: WeightedDynamicGraph
+                                              ) -> (Weight, List[Edge]):
+    """
+    Prim's algorithm for a minimal spanning tree.
+    Requires graph vertices are numbers 0 to V-1.
+    Inefficient for sparse graphs.
+    """
+
+    n = graph.num_verts()
+    weights = [float("inf")] * n
+    mst: List[Optional[Edge]] = [None] * n
+    frontier: List[Optional[Edge]] = [None] * n
+    min_vert = -1
+    v = 0
+
+    while min_vert != 0:
+        min_vert = 0
+        for w in range(1, n):
+            if mst[w] is None:
+                e = graph.get_edge(v, w)
+                if e:
+                    if e.weight < weights[w]:
+                        weights[w] = e.weight
+                        frontier[w] = e
+                if weights[w] < weights[min_vert]:
+                    min_vert = w
+
+        if min_vert:
+            mst[min_vert] = frontier[min_vert]
+        v = min_vert
+
+    return sum([mst[i].weight for i in range(1, n)]), mst[1:]
