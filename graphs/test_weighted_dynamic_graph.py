@@ -303,7 +303,7 @@ class TestWeightedWeightedDynamicGraph(TestCase):
             for w in range(0, 3):
                 self.assertFalse(tc.reachable(v, w))
 
-    def test_prims_algorithm_for_mst(self):
+    def test_prims_algorithm_for_minimal_spanning_tree(self):
         graph = WeightedDynamicGraph(directed=False)
         graph.add_edges_from_array([[0, 1, 4], [0, 2, 5], [0, 3, 3], [1, 2, 1], [1, 3, 6], [2, 3, 2]])
         total_weight, mst_edges = prims_algorithm_for_minimal_spanning_tree(graph)
@@ -311,3 +311,13 @@ class TestWeightedWeightedDynamicGraph(TestCase):
         self.assertEqual(3, len(mst_edges))
         for e in (Edge(1, 2, 1), Edge(2, 3, 2), Edge(0, 3, 3)):
             self.assertTrue(e in mst_edges)
+
+    def test_prims_algorithm_with_priority_queue(self):
+        graph = WeightedDynamicGraph(directed=False)
+        graph.add_edges_from_array([[0, 1, 4], [0, 2, 5], [0, 3, 3], [1, 2, 1], [1, 3, 6], [2, 3, 2]])
+        total_weight, mst_edges = prims_algorithm_with_priority_queue(graph)
+        self.assertEqual(6, total_weight)
+        self.assertEqual(3, len(mst_edges))
+        for e in (Edge(1, 2, 1), Edge(2, 3, 2), Edge(0, 3, 3)):
+            f = Edge(e.w, e.v, e.weight)
+            self.assertTrue(e in mst_edges or f in mst_edges)

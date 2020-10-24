@@ -1,7 +1,8 @@
+import heapq
 import functools
 from collections import deque
 from copy import copy, deepcopy
-from typing import TypeVar, Dict, List, Iterable, Union, Optional
+from typing import *
 import random
 from graphs.densegraph import DenseGraph
 
@@ -639,7 +640,7 @@ def find_kernel_dag_for_digraph(graph: WeightedDynamicGraph):
 def prims_algorithm_for_minimal_spanning_tree(graph: WeightedDynamicGraph
                                               ) -> (Weight, List[Edge]):
     """
-    Prim's algorithm for a minimal spanning tree.
+    Prim's algorithm for a minimal spanning tree of connected undirected graph.
     Requires graph vertices are numbers 0 to V-1.
     Inefficient for sparse graphs.
     """
@@ -647,7 +648,7 @@ def prims_algorithm_for_minimal_spanning_tree(graph: WeightedDynamicGraph
     n = graph.num_verts()
     weights = [float("inf")] * n
     mst: List[Optional[Edge]] = [None] * n
-    frontier: List[Optional[Edge]] = [None] * n
+    fringe: List[Optional[Edge]] = [None] * n
     min_vert = -1
     v = 0
 
@@ -659,12 +660,37 @@ def prims_algorithm_for_minimal_spanning_tree(graph: WeightedDynamicGraph
                 if e:
                     if e.weight < weights[w]:
                         weights[w] = e.weight
-                        frontier[w] = e
+                        fringe[w] = e
                 if weights[w] < weights[min_vert]:
                     min_vert = w
 
         if min_vert:
-            mst[min_vert] = frontier[min_vert]
+            mst[min_vert] = fringe[min_vert]
         v = min_vert
 
     return sum([mst[i].weight for i in range(1, n)]), mst[1:]
+
+
+def prims_algorithm_with_priority_queue(graph: WeightedDynamicGraph
+                                        ) -> (Weight, List[Edge]):
+
+    n = graph.num_verts()
+    fringe: List[Tuple[Weight, Edge]] = []
+    mst: Dict[VertName, Optional[Edge]] = {}
+
+    for v in graph.get_verts():
+        break
+    mst[v] = None
+    for e in graph.get_adjacent(v):
+        heapq.heappush(fringe, (e.weight, e))
+    while fringe and len(mst) < n:
+        _, e = heapq.heappop(fringe)
+        if e.w not in mst:
+            mst[e.w] = e
+            for e in graph.get_adjacent(e.w):
+                if e.w not in mst:
+                    heapq.heappush(fringe, (e.weight, e))
+    del mst[v]
+    edges = sorted(mst.values())
+    weight = sum([e.weight for e in edges])
+    return weight, edges
