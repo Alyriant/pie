@@ -1,9 +1,9 @@
 from unittest import TestCase
 from graphs.weighted_dynamic_graph import *
-from parameterized import parameterized, parameterized_class
+from parameterized import parameterized
 
 
-class TestWeightedWeightedDynamicGraph(TestCase):
+class TestWeightedDynamicGraph(TestCase):
     def test_get_edges(self):
         graph = WeightedDynamicGraph(directed=False)
         graph.add_edges_from_array([[0, 1, 1], [1, 2, 1], [2, 1, 1], [3, 3, 1], [3, 3, 1]])
@@ -321,3 +321,14 @@ class TestWeightedWeightedDynamicGraph(TestCase):
         for e in (Edge(1, 2, 1), Edge(2, 3, 2), Edge(0, 3, 3)):
             f = Edge(e.w, e.v, e.weight)
             self.assertTrue(e in mst_edges or f in mst_edges)
+
+    def test_UnionFindConnected(self):
+        graph = WeightedDynamicGraph(directed=False)
+        graph.add_edges_from_array_default_weight([[0, 1], [2, 3], [3, 4], [4, 2]])
+        graph.add_vert(5)
+        uf = UnionFindConnected(graph)
+        self.assertTrue(uf.connected(0, 1))
+        self.assertTrue(uf.connected(2, 3) and uf.connected(3, 4))
+        self.assertFalse(uf.connected(1, 2) or uf.connected(4, 5))
+        uf.connect(4, 5)
+        self.assertTrue(uf.connected(2, 5))

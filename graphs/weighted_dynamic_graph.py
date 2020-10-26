@@ -177,6 +177,40 @@ class DigraphTransitiveClosure:
             return self.kernel_dag_closure.has_edge((cv, cw))
 
 
+class UnionFindConnected:
+    """
+    Used to find connected components of undirected graphs by constructing a tree
+    where the root of a component has an id equal to its name, and other members of the
+    component have an id chain leading to the root.
+    """
+
+    def __init__(self, graph: WeightedDynamicGraph) -> None:
+        if graph.is_directed():
+            raise Exception("Requires undirected graph")
+
+        self._component_id: Dict[VertName, VertName] = {v: v for v in graph.get_verts()}
+        for e in graph.get_edges():
+            self.connect(e.v, e.w)
+
+    def find_id(self, v: VertName) -> VertName:
+        while self._component_id[v] != v:
+            # flatten the tree
+            self._component_id[v] = self._component_id[self._component_id[v]]
+            v = self._component_id[v]
+        return v
+
+    def connected(self, v: VertName, w: VertName) -> bool:
+        return self.find_id(v) == self.find_id(w)
+
+    def connect(self, v: VertName, w: VertName) -> None:
+        i = self.find_id(v)
+        j = self.find_id(w)
+        if i == j:
+            return
+        else:
+            self._component_id[i] = j
+
+
 def create_random_graph_helper(graph: WeightedDynamicGraph, multigraph: bool,
                                self_loops: bool, num_verts: int) -> None:
     # ensure at least one
@@ -673,6 +707,11 @@ def prims_algorithm_for_minimal_spanning_tree(graph: WeightedDynamicGraph
 
 def prims_algorithm_with_priority_queue(graph: WeightedDynamicGraph
                                         ) -> (Weight, List[Edge]):
+    """
+    Prim's algorithm for a minimal spanning tree of connected undirected graph.
+    This version uses a priority queue to be more efficient for sparse graphs
+    and doesn't care if the verts are numbers.
+    """
 
     n = graph.num_verts()
     fringe: List[Tuple[Weight, Edge]] = []
@@ -687,9 +726,9 @@ def prims_algorithm_with_priority_queue(graph: WeightedDynamicGraph
         _, e = heapq.heappop(fringe)
         if e.w not in mst:
             mst[e.w] = e
-            for e in graph.get_adjacent(e.w):
-                if e.w not in mst:
-                    heapq.heappush(fringe, (e.weight, e))
+            for f in graph.get_adjacent(e.w):
+                if f.w not in mst:
+                    heapq.heappush(fringe, (f.weight, f))
     del mst[v]
     edges = sorted(mst.values())
     weight = sum([e.weight for e in edges])
