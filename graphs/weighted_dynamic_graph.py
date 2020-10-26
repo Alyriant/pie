@@ -152,6 +152,8 @@ class DigraphTransitiveClosure:
     vert_to_component_map: Dict[VertName, int]
 
     def __init__(self, graph: WeightedDynamicGraph) -> None:
+        if not graph.is_directed():
+            raise Exception("Requires directed graph")
         self.digraph = graph
         self.kernel_dag, self.vert_to_component_map = find_kernel_dag_for_digraph(self.digraph)
         self.kernel_dag_closure = self._compute_transitive_closure()
@@ -567,7 +569,7 @@ def convert_to_dag(graph: WeightedDynamicGraph):
 
 def create_reversed_graph(graph: WeightedDynamicGraph) -> Union[WeightedDynamicGraph, None]:
     if not graph.is_directed():
-        return None
+        raise Exception("Requires directed graph")
 
     rev = WeightedDynamicGraph(directed=True)
     for edge in graph.get_edges():
@@ -575,9 +577,9 @@ def create_reversed_graph(graph: WeightedDynamicGraph) -> Union[WeightedDynamicG
     return rev
 
 
-def topological_sort_dag(graph: WeightedDynamicGraph) -> Union[List[VertName], None]:
+def topological_sort_dag(graph: WeightedDynamicGraph) -> List[VertName]:
     if not graph.is_directed():
-        return None
+        raise Exception("Requires directed graph")
 
     pre = {v: False for v in graph.get_verts()}
     post = {v: False for v in graph.get_verts()}
@@ -614,8 +616,8 @@ def strong_components_kosaraju(graph: WeightedDynamicGraph):
     vert_to_component_map
     components (list of vertices belonging to each component)
     """
-    if not graph.is_directed:
-        return None, None, None
+    if not graph.is_directed():
+        raise Exception("Requires directed graph")
 
     rev = create_reversed_graph(graph)
     vert_to_component_map = {v: -1 for v in rev.get_verts()}
@@ -658,6 +660,9 @@ def strong_components_kosaraju(graph: WeightedDynamicGraph):
 
 
 def find_kernel_dag_for_digraph(graph: WeightedDynamicGraph):
+    if not graph.is_directed():
+        raise Exception("Requires directed graph")
+
     num_components, vert_to_component_map, strong_components = \
         strong_components_kosaraju(graph)
     if not num_components:
@@ -679,6 +684,9 @@ def prims_algorithm_for_minimal_spanning_tree(graph: WeightedDynamicGraph
     Requires graph vertices are numbers 0 to V-1.
     Inefficient for sparse graphs.
     """
+
+    if graph.is_directed():
+        raise Exception("Requires undirected graph")
 
     n = graph.num_verts()
     weights = [float("inf")] * n
@@ -714,6 +722,9 @@ def prims_algorithm_with_priority_queue(graph: WeightedDynamicGraph
     and doesn't care if the verts are numbers.
     """
 
+    if graph.is_directed():
+        raise Exception("Requires undirected graph")
+
     n = graph.num_verts()
     fringe: List[Tuple[Weight, Edge]] = []
     mst: Dict[VertName, Optional[Edge]] = {}
@@ -737,6 +748,9 @@ def prims_algorithm_with_priority_queue(graph: WeightedDynamicGraph
 
 
 def kruskals_algorithm_for_mst(graph: WeightedDynamicGraph) -> (Weight, List[Edge]):
+    if graph.is_directed():
+        raise Exception("Requires undirected graph")
+
     mst = []
     total_weight = 0
     uf = UnionFindConnected(graph, add_edges=False)
