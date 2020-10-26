@@ -332,3 +332,13 @@ class TestWeightedDynamicGraph(TestCase):
         self.assertFalse(uf.connected(1, 2) or uf.connected(4, 5))
         uf.connect(4, 5)
         self.assertTrue(uf.connected(2, 5))
+
+    def test_kruskals_algorithm_for_mst(self):
+        graph = WeightedDynamicGraph(directed=False)
+        graph.add_edges_from_array([[0, 1, 4], [0, 2, 5], [0, 3, 3], [1, 2, 1], [1, 3, 6], [2, 3, 2]])
+        total_weight, mst_edges = kruskals_algorithm_for_mst(graph)
+        self.assertEqual(6, total_weight)
+        self.assertEqual(3, len(mst_edges))
+        for e in (Edge(1, 2, 1), Edge(2, 3, 2), Edge(0, 3, 3)):
+            f = Edge(e.w, e.v, e.weight)
+            self.assertTrue(e in mst_edges or f in mst_edges)

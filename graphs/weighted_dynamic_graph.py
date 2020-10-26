@@ -184,13 +184,14 @@ class UnionFindConnected:
     component have an id chain leading to the root.
     """
 
-    def __init__(self, graph: WeightedDynamicGraph) -> None:
+    def __init__(self, graph: WeightedDynamicGraph, add_edges: bool = True) -> None:
         if graph.is_directed():
             raise Exception("Requires undirected graph")
 
         self._component_id: Dict[VertName, VertName] = {v: v for v in graph.get_verts()}
-        for e in graph.get_edges():
-            self.connect(e.v, e.w)
+        if add_edges:
+            for e in graph.get_edges():
+                self.connect(e.v, e.w)
 
     def find_id(self, v: VertName) -> VertName:
         while self._component_id[v] != v:
@@ -733,3 +734,16 @@ def prims_algorithm_with_priority_queue(graph: WeightedDynamicGraph
     edges = sorted(mst.values())
     weight = sum([e.weight for e in edges])
     return weight, edges
+
+
+def kruskals_algorithm_for_mst(graph: WeightedDynamicGraph) -> (Weight, List[Edge]):
+    mst = []
+    total_weight = 0
+    uf = UnionFindConnected(graph, add_edges=False)
+    edges = sorted(graph.get_edges(), key=lambda x: x.weight)
+    for e in edges:
+        if not uf.connected(e.v, e.w):
+            uf.connect(e.v, e.w)
+            mst.append(e)
+            total_weight += e.weight
+    return total_weight, mst

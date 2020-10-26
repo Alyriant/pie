@@ -2,6 +2,7 @@
   <dictionary name="Jodawi">
     <words>
       <w>kosaraju</w>
+      <w>kruskals</w>
       <w>multigraph</w>
       <w>prim's</w>
       <w>sedgewick</w>
