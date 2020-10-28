@@ -1,6 +1,7 @@
 <component name="ProjectDictionaryState">
   <dictionary name="Jodawi">
     <words>
+      <w>dijkstras</w>
       <w>kosaraju</w>
       <w>kruskals</w>
       <w>multigraph</w>

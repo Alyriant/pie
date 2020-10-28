@@ -604,7 +604,7 @@ def topological_sort_dag(graph: WeightedDynamicGraph) -> List[VertName]:
             dfs(v)
 
     if not is_a_dag:
-        return None
+        raise Exception("Requires a DAG")
 
     return reverse_topo[::-1]
 
@@ -761,3 +761,34 @@ def kruskals_algorithm_for_mst(graph: WeightedDynamicGraph) -> (Weight, List[Edg
             mst.append(e)
             total_weight += e.weight
     return total_weight, mst
+
+
+def dijkstras_algorithm(graph: WeightedDynamicGraph, v: VertName
+                        ) -> Tuple[Dict[VertName, Weight],
+                                   Dict[VertName, Optional[Edge]]]:
+    """
+    Dijkstra's algorithm to find single source shortest path tree to all vertices.
+    """
+
+    n = graph.num_verts()
+    fringe: List[Tuple[Weight, Edge]] = []
+    spt: Dict[VertName, Optional[Edge]] = {v: None}
+    cost: Dict[VertName, Weight] = {w: float("inf") for w in graph.get_verts()}
+    cost[v] = 0
+    fringe.append((0, Edge(v, v, 0)))
+    while fringe:
+        current_distance, current_edge = heapq.heappop(fringe)
+        if current_distance > cost[current_edge.w]:
+            # May have same edge multiple times with different costs; keep
+            # only the shortest
+            continue
+
+        for e in graph.get_adjacent(current_edge.w):
+            distance = current_distance + e.weight
+
+            if distance < cost[e.w]:
+                cost[e.w] = distance
+                heapq.heappush(fringe, (distance, e))
+                spt[e.w] = e
+
+    return cost, spt

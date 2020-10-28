@@ -342,3 +342,15 @@ class TestWeightedDynamicGraph(TestCase):
         for e in (Edge(1, 2, 1), Edge(2, 3, 2), Edge(0, 3, 3)):
             f = Edge(e.w, e.v, e.weight)
             self.assertTrue(e in mst_edges or f in mst_edges)
+
+    def test_dijkstras_algorithm(self):
+        graph = WeightedDynamicGraph(directed=True)
+        graph.add_edges_from_array([[0, 1, 1], [0, 2, 1], [1, 3, 1], [1, 5, 10], [3, 4, 1], [4, 5, 1],
+                                    [1, 1, 1], [3, 5, 5], [1, 3, 0]])
+        cost, spt = dijkstras_algorithm(graph, 1)
+        for vertex, dist in ((0, float("inf")), (1, 0), (2, float("inf")), (3, 0), (4, 1), (5, 2)):
+            self.assertEqual(dist, cost[vertex])
+        for vertex, edge in ((0, None), (2, None)):
+            self.assertFalse(vertex in spt)
+        for vertex, edge in ((3, Edge(1, 3, 0)), (4, Edge(3, 4, 1)), (5, Edge(4, 5, 1))):
+            self.assertEqual(edge, spt[vertex])
