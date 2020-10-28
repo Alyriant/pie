@@ -729,6 +729,7 @@ def prims_algorithm_with_priority_queue(graph: WeightedDynamicGraph
     fringe: List[Tuple[Weight, Edge]] = []
     mst: Dict[VertName, Optional[Edge]] = {}
 
+    v = None  # quiet pycharm warning
     for v in graph.get_verts():
         break
     mst[v] = None
@@ -770,7 +771,6 @@ def dijkstras_algorithm(graph: WeightedDynamicGraph, v: VertName
     Dijkstra's algorithm to find single source shortest path tree to all vertices.
     """
 
-    n = graph.num_verts()
     fringe: List[Tuple[Weight, Edge]] = []
     spt: Dict[VertName, Optional[Edge]] = {v: None}
     cost: Dict[VertName, Weight] = {w: float("inf") for w in graph.get_verts()}
